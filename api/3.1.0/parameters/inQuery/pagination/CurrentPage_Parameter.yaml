@@ -1,0 +1,22 @@
+name: CurrentPage
+in: query
+schema:
+  type: integer
+  default: 1
+  minimum: 1
+# Defining Default Values:
+
+# The developer specifies the default value within the schema
+# of the parameter definition in the OpenAPI document.
+
+# This tells the API implementation how to behave
+# when the parameter is not explicitly provided by the client.
+
+# The API implementation (the server-side code (backend developer))
+# is responsible for reading the OpenAPI specification.
+
+# When handling a request for the specified endpoint,
+# the implementation checks if the parameter is present in the request.
+
+# If the parameter is missing, the implementation uses the default value
+# defined in the OpenAPI specification.

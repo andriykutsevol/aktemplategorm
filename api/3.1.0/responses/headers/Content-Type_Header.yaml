@@ -1,0 +1,4 @@
+description: The media type of the returned content
+schema:
+  type: string
+example: application/json

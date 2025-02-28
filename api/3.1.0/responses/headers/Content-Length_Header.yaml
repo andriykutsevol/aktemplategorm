@@ -1,0 +1,4 @@
+description: Content-Length header in response
+schema:
+  type: integer
+example: 272

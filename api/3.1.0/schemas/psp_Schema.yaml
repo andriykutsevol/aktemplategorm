@@ -1,0 +1,58 @@
+PspObject:
+  type: object
+  properties:
+    PspCode:
+      type: string
+      description: Psp code in a specific format (Country_code - Psp_shortcode)
+      example: CG-MTN-MTN
+    PspCountryCode:
+      type: string
+      description: Country code ISO 3166-1 ALPHA-2
+      example: "CM"
+    PspShortName:
+      type: string
+      description: Short human friendly name of the PspShort human friendly name of the Psp
+      example: CG-MTN-MTN_1 Short name
+
+PspCreate:
+  allOf:
+    - $ref: "#/PspObject"
+    - type: object
+      required:
+        - PspCode
+
+PspResponse:
+  allOf:
+    - $ref: "#/PspObject"
+    - type: object
+      properties:
+        ID:
+          type: integer
+          description: ID in the database.
+          example: 1
+      required:
+        - ID
+        - PspCode
+    - $ref: "./auditDBRecord_Schema.yaml#/AuditDBRecordResponse"
+
+PaginatedPspResponse:
+  type: object
+  properties:
+    pagination:
+      $ref: "./Pagination_Schema.yaml"
+    results:
+      type: array
+      items:
+        $ref: "#/PspResponse"
+
+PspPatchByArray:
+  allOf:
+    - $ref: "#/PspObject"
+    - type: object
+      properties:
+        ID:
+          type: integer
+          description: ID in the database.
+          example: 1
+      required:
+        - ID

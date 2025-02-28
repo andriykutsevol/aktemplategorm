@@ -1,0 +1,53 @@
+# example with null:
+# {
+#   "PspCode": null,
+#   "SomeTestInteger": null,
+#   "DeletedAt": null,
+#   "DeletedBy": null
+# }
+
+# It will produce:
+# key:  PspCode value:  <nil>
+# key:  SomeTestInteger value:  <nil>
+# key:  DeletedAt value:  <nil>
+# key:  DeletedBy value:  <nil>
+# on backend.
+# If we'll ommit some field, it will just not be there on backend.
+# So, If it's <nil> we know that we have to set it to nil in the database also.
+
+PspPatchByID_VOne:
+  description: Request body to update psp by ID in path
+  content:
+    application/json:
+      schema:
+        allOf:
+          - $ref: "../schemas/psp_Schema.yaml#/PspObject"
+          - type: object
+            properties:
+              SomeTestInteger:
+                type: integer
+                description: SomeTestInteger
+                example: 10
+          - $ref: "../schemas/auditDBRecord_Schema.yaml#/AuditDBRecordObject"
+      examples:
+        WithNullValues:
+          value:
+            PspCode: ""
+
+PspPatchByID:
+  description: Request body to update psp by ID in path
+  content:
+    application/json:
+      schema:
+        allOf:
+          - $ref: "../schemas/psp_Schema.yaml#/PspObject"
+          - $ref: "../schemas/auditDBRecord_Schema.yaml#/AuditDBRecordObject"
+
+PspPatchByArray:
+  description: Request body to update psp by array of objects with IDs
+  content:
+    application/json:
+      schema:
+        type: array
+        items:
+          $ref: "../schemas/psp_Schema.yaml#/PspPatchByArray"

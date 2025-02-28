@@ -1,0 +1,99 @@
+openapi: 3.1.0
+# docker run --rm -v $(pwd):/spec redocly/cli bundle /spec/openapi.yaml --output /spec/bundled.yaml
+# docker run --rm -v $(pwd):/spec redocly/cli lint ./bundled.yaml
+
+info:
+  version: 3.0.1
+  title: Some Utililty Service V3.0.1
+  description: |-
+    The Some Utility Service [MUS](https://Some.atlassian.net/wiki/spaces/SCG/pages/3508961396/1040+-+Feature+Request+Some+Utililty+Service+-+MUS) act as a central store of common master data related to Some applications. 
+    It shall provide an API to be called by other Some applications with functionality to:
+    - Add, Update and delete master data
+    - Utility functionality to perform calculations
+    - Offer APIs for other services and systems to access this data
+
+    The scope of this request is to store data for the following use cases:
+
+    - Manage and provide administrative data including Regions, and cities in the countries of CEMAC
+    - Provide withdrawal fees for mobile money
+    - Fuzzy Logic APIs to support https://Some.atlassian.net/wiki/spaces/SET/pages/3486711809Request access 
+      - etc.
+  contact:
+    email: developer@email.com
+    name: Some Developer
+    url: https://www.developer.io/contact
+  license:
+    name: New BSD License
+    url: https://opensource.org/license/bsd-3-clause
+externalDocs:
+  description: Some Utililty Service - MUS
+  url: https://Some.atlassian.net/wiki/spaces/SCG/pages/3508961396/1040+-+Feature+Request+Some+Utililty+Service+-+MUS
+
+servers:
+  - url: "{protocol}://{environment}:{port}"
+    variables:
+      protocol:
+        default: http
+        enum:
+          - http
+          - https
+      environment:
+        default: 0.0.0.0 # Production server
+        enum:
+          - 0.0.0.0
+          - api # Production server
+          - api.dev # Development server
+          - api.staging # Staging server
+          - api.test # Test server
+      port:
+        default: "8080"
+        enum:
+          - "8080"
+
+security:
+  - ApiKey: [] # use the same name as under securitySchemes. To protect all routes.
+
+tags:
+  - name: Auth
+    description: Protecting routes.
+
+  - name: FeeManagement
+    description: When beneficiaries receive money by mobile money into their wallets, there is an extra charge to withdraw this money. This functionality allows caller to configure the different fees in the system
+    externalDocs:
+      description: Technical Implementation
+      url: https://Some.atlassian.net/wiki/spaces/SCG/pages/3509027181/1040+-+Technical+Implementation#Module%3A-Withdrawal-Fees
+
+  - name: FeeCalculation
+    description: Endpoints to allow caller to calculate the withdrawal fees for a given amount and psp
+    externalDocs:
+      description: Technical Implementation
+      url: https://Some.atlassian.net/wiki/spaces/SCG/pages/3509027181/1040+-+Technical+Implementation#Module%3A-Withdrawal-Fees
+
+paths:
+  /auth:
+    $ref: "./paths/auth/login_Path.yaml"
+  /pspfee:
+    post:
+      $ref: "./paths/feesManagement/PspCreate_Path.yaml"
+  /pspfee/querypspmap:
+    get:
+      $ref: "./paths/feesManagement/PspQueryByMap_Path.yaml"
+  /pspfee/querypspjson:
+    get:
+      $ref: "./paths/feesManagement/PspQueryByJson_Path.yaml"
+  /pspfee/querypsprequest:
+    get:
+      $ref: "./paths/feesManagement/PspQueryByRequest_Path.yaml"
+  /pspfee/patchbyid/{ID}:
+    patch:
+      $ref: "./paths/feesManagement/PspPatchByID_Path.yaml"
+  /pspfee/patchbyarray:
+    patch:
+      $ref: "./paths/feesManagement/PspPatchByArray_Path.yaml"
+
+components:
+  securitySchemes:
+    ApiKey: # arbitrary name for the security scheme
+      type: apiKey # apiKey, http, oauth2, openIdConnect
+      in: header # can be "header", "query" or "cookie"
+      name: x-api-key # name of the header, query parameter or cookie

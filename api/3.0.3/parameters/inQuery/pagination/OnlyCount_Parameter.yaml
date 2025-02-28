@@ -1,0 +1,5 @@
+name: OnlyCount
+in: query
+schema:
+  type: boolean
+  default: false

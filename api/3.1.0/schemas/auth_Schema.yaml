@@ -1,0 +1,24 @@
+LoginObject:
+  type: object
+  properties:
+    UserName:
+      type: string
+      example: "User"
+    Password:
+      type: string
+      example: "1234"
+
+AuthObject:
+  type: object
+  properties:
+    AccessToken:
+      type: string
+      example: Bearer
+    TokenType:
+      type: string
+      example: eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MzQxMDk3MjAsImlhdCI6MTczMzkzNzcyMCwibmJmIjoxNzMzOTM3NzIwLCJzdWIiOiJkZTk1Y2E5ZC00ODk4LTQ2ZjQtYWY3OS1iMWU3MDMyNmI0YzEifQ.-8C4EPXoZMP8XDyU8t-3vRaAub2pZg_64oXgg73f4c9swb7tI1jCdnXOPCiiwgshtTB0V-vVTSz0unImrjGQtg
+    ExpiresAt:
+      type: integer
+      format: int64
+      description: Unix timestamp in seconds since the epoch (1970-01-01T00:00:00Z).
+      example: 1702211200

@@ -1,0 +1,13 @@
+name: X-Correlation-Id
+in: header
+description: |
+  Unique identifier for every request. 
+  Can be used for tracking down answers 
+  with technical support. 
+  Uses the ULID format (a time-based, sortable UUID). 
+  Note this will be different for every request.
+required: false
+schema:
+  type: string
+  format: ulid
+example: 01F8MECHZX3TBDSZ7XRADM79XV

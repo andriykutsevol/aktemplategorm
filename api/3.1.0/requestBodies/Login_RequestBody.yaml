@@ -1,0 +1,10 @@
+description: Request payload to generate jwt
+content:
+  application/json:
+    schema:
+      allOf:
+        - $ref: "../schemas/auth_Schema.yaml#/LoginObject"
+        - type: object
+          required:
+            - UserName
+            - Password

@@ -1,0 +1,24 @@
+type: object
+properties:
+  CurrentPage:
+    description: Current Page
+    type: integer
+  PageSize:
+    description: Page Size
+    type: integer
+  PagesCount:
+    description: Total count
+    type: integer
+  HasMore:
+    description: Total count
+    type: boolean
+  ItemsCount:
+    type: integer
+    format: int64
+    description: Total
+required:
+  - CurrentPage
+  - PageSize
+  - PagesCount
+  - HasMore
+  - ItemsCount

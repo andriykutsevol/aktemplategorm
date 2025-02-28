@@ -1,0 +1,3 @@
+docker run --rm -v $(pwd):/spec redocly/cli bundle /spec/openapi.yaml --output /spec/bundled.yaml
+
+docker run --rm -v $PWD:/spec redocly/cli lint bundled.yaml

@@ -1,0 +1,5 @@
+description: Request body to create Psp
+content:
+  application/json:
+    schema:
+      $ref: "../schemas/psp_Schema.yaml#/PspCreate"

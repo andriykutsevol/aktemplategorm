@@ -1,0 +1,22 @@
+patch:
+  #security: [] # Overrides global security, making this endpoint public
+  tags:
+    - FeeManagement
+  summary: PspPatchByID
+  operationId: PspPatchByID
+  parameters:
+    - $ref: "../../parameters/inHeader/Bearer-Api-Key_Parameter.yaml"
+    - $ref: "../../parameters/inHeader/Content-Type_Parameter.yaml"
+    - $ref: "../../parameters/inHeader/X-Correlation-Id_Parameter.yaml"
+    - $ref: "../../parameters/inPath/ID_Parameter.yaml"
+  requestBody:
+    $ref: "../../requestBodies/PspPatch_RequestBody.yaml#/PspPatchByID"
+  responses:
+    "200":
+      $ref: "../../responses/Psp_Response.yaml"
+    "400":
+      $ref: "../../responses/error_Response.yaml#/BadRequest"
+    "401":
+      $ref: "../../responses/error_Response.yaml#/Unauthorized"
+    "500":
+      $ref: "../../responses/error_Response.yaml#/InternalServerError"

@@ -1,0 +1,13 @@
+type: object
+properties:
+  updatedCount:
+    type: integer
+    description: Number of users successfully updated.
+  updatedIDs:
+    type: array
+    items:
+      type: integer
+      description: IDs of the updated users.
+required:
+  - updatedCount
+  - updatedIDs

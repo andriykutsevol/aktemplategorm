@@ -1,0 +1,20 @@
+security: [] # Overrides global security, making this endpoint public
+tags:
+  - FeeManagement
+summary: Create Psp
+operationId: CreatePsp
+parameters:
+  - $ref: "../../parameters/inHeader/Bearer-Api-Key_Parameter.yaml"
+  - $ref: "../../parameters/inHeader/Content-Type_Parameter.yaml"
+  - $ref: "../../parameters/inHeader/X-Correlation-Id_Parameter.yaml"
+requestBody:
+  $ref: "../../requestBodies/PspCreate_RequestBody.yaml"
+responses:
+  "201":
+    $ref: "../../responses/Psp_Response.yaml"
+  "400":
+    $ref: "../../responses/error_Response.yaml#/BadRequest"
+  "401":
+    $ref: "../../responses/error_Response.yaml#/Unauthorized"
+  "500":
+    $ref: "../../responses/error_Response.yaml#/InternalServerError"

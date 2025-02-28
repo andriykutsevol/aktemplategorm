@@ -1,0 +1,43 @@
+AuditDBRecordObject:
+  type: object
+  properties:
+    CreatedAt:
+      type: string
+      format: date-time # A string in YYYY-MM-DDTHH:mm:ssZ format (ISO 8601).
+      description: It should be created by a trigger function in the database.
+    CreatedBy:
+      type: string
+      format: uuid
+      description: It should be provided by a gin(golang) middleware.
+    UpdatedAt:
+      type: string
+      format: date-time
+      description: It should be updated by a trigger function in the database.
+    UpdatedBy:
+      type: string
+      format: uuid
+      description: It should be provided by a gin(golang) middleware.
+    DeletedAt:
+      description: It should be updated by a trigger function in the database.
+      oneOf:
+        - type: string
+          format: date-time
+        - type: "null" # Note the quotes around null
+          example: null
+    DeletedBy:
+      description: It should be provided by a gin(golang) middleware.
+      oneOf:
+        - type: string
+          format: uuid
+        - type: "null" # Note the quotes around null
+          example: null
+
+AuditDBRecordResponse:
+  allOf:
+    - $ref: "#/AuditDBRecordObject"
+    - type: object
+      required:
+        - CreatedAt
+        - CreatedBy
+        - UpdatedAt
+        - UpdatedBy

@@ -1,0 +1,36 @@
+get:
+  security: [] # Overrides global security, making this endpoint public
+  tags:
+    - FeeManagement
+  summary: PspQueryByJson
+  operationId: PspQueryByJson
+  parameters:
+    - $ref: "../../parameters/inHeader/Bearer-Api-Key_Parameter.yaml"
+    - $ref: "../../parameters/inHeader/Content-Type_Parameter.yaml"
+    - $ref: "../../parameters/inHeader/X-Correlation-Id_Parameter.yaml"
+
+    - name: filter
+      in: query
+      schema:
+        type: string
+        description: Json sting #{"IDs": ["6","7"], "PspCode": "CG-MTN-MTN_22"}
+        example: "%7B%22PspCode%22%3A%20%22CG-MTN-MTN_22%22%2C%20%22PspCountryCode%22%3A%20%22CM%22%7D"
+    - name: sort
+      in: query
+      schema:
+        type: string
+        description: Json sting #["ID", "DESC", "PspCode", "ASC"]
+        example: "%5B%22ID%22%2C%20%22DESC%22%2C%20%22PspCode%22%2C%20%22ASC%22%5D"
+
+    - $ref: "../../parameters/inQuery/pagination/CurrentPage_Parameter.yaml"
+    - $ref: "../../parameters/inQuery/pagination/PageSize_Parameter.yaml"
+    - $ref: "../../parameters/inQuery/pagination/OnlyCount_Parameter.yaml"
+  responses:
+    "200":
+      $ref: "../../responses/QueryPsp_Response.yaml"
+    "400":
+      $ref: "../../responses/error_Response.yaml#/BadRequest"
+    "401":
+      $ref: "../../responses/error_Response.yaml#/Unauthorized"
+    "500":
+      $ref: "../../responses/error_Response.yaml#/InternalServerError"

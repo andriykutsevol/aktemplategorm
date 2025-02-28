@@ -1,0 +1,15 @@
+name: Content-Type
+in: header
+description: |
+  The content type of the request body. Supported values:
+  - `application/json` for JSON payloads
+  - `application/xml` for XML payloads
+  - `multipart/form-data` for file uploads
+required: true
+schema:
+  type: string
+  enum:
+    - application/json
+    - application/xml
+    - multipart/form-data
+example: application/json

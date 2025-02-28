@@ -1,0 +1,117 @@
+services:
+  db_service:
+    image: mysql:8
+    restart: unless-stopped
+    ports:
+      - ${MYSQL_PORT_ONHOST}:3306
+    env_file:
+      - ${ROOT_DIR}/${ENVFILE}
+    healthcheck:
+      test: "mysqladmin ping --silent"
+      timeout: 30s
+      retries: 20
+    volumes:
+      - db:/var/lib/mysql
+    networks:
+      mus:
+        ipv4_address: ${MYSQL_HOST_ONNETWORK}
+    profiles:
+      - db
+      - all
+      - dev_vol   
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      PMA_HOST: db_service
+      PMA_PORT: ${MYSQL_PORT_ONNETWORK}
+      PMA_USER: ${MYSQL_USER}
+      PMA_PASSWORD: ${MYSQL_PASSWORD}
+      PMA_ARBITRARY: 1
+    ports:
+      - "18080:80"
+    networks:
+      mus:
+        ipv4_address: ${PHPMYADMIN_HOST_ONNETWORK}
+    restart: unless-stopped    
+    depends_on:
+      db_service: 
+        condition: service_healthy     
+    profiles:
+      - db
+      - all
+      - dev_vol
+
+
+  backend_dev:
+    build:
+      context: ${ROOT_DIR}
+      dockerfile: ${DEPLOYMENTS}/Dockerfile_Go_Dev
+      tags:
+        - mus_backend_dev:latest
+    stdin_open: true    
+    tty: true   # Allocate a pseudo-TTY.
+    command: ${DEBUG_MODE}
+    container_name: mus_backend_dev
+    image: mus_backend_dev
+    environment:
+      DATABASE_DSN: ${DATABASE_DSN}
+      MYSQL_MAX_OPENCONNS: ${MYSQL_MAX_OPENCONNS}
+      MYSQL_MAX_IDLECONS: ${MYSQL_MAX_IDLECONS}
+      APP_PORT: ${APP_PORT}    
+    ports:
+      - ${APP_PORT_ONLOCALHOST}:${APP_PORT_ONNETWORK}
+    networks:
+      mus:
+        ipv4_address: ${BACKEND_HOST_ONNETWORK}
+    profiles:
+      - backend_dev
+      - all
+
+  backend_dev_vol:
+    build:
+      context: ${ROOT_DIR}
+      dockerfile: ${DEPLOYMENTS}/Dockerfile_Go_Dev_Vol
+      tags:
+        - mus_backend_dev_vol:latest
+    stdin_open: true    
+    tty: true   # Allocate a pseudo-TTY.
+    command: ${COMMAND}
+    container_name: mus_backend_dev_vol
+    image: mus_backend_dev_vol
+    environment:
+      DATABASE_DSN: ${DATABASE_DSN}
+      MYSQL_MAX_OPENCONNS: ${MYSQL_MAX_OPENCONNS}
+      MYSQL_MAX_IDLECONS: ${MYSQL_MAX_IDLECONS}
+      APP_PORT: ${APP_PORT}
+    ports:
+      - ${APP_PORT_ONLOCALHOST}:${APP_PORT_ONNETWORK}
+    networks:
+      mus:
+        ipv4_address: ${BACKEND_HOST_ONNETWORK}
+    restart: unless-stopped    
+    depends_on:
+      db_service: 
+        condition: service_healthy           
+    volumes:
+       - ${ROOT_DIR}:/opt/app        
+    profiles:
+      - backend_dev_vol
+      - all
+      - dev_vol
+
+
+
+
+volumes:
+  db:
+
+networks:
+  mus:
+    name: mus_network
+    external: true
+    driver: bridge      # Default. Does not change the default behavior but explicitly declares that this network is of the bridge type.                  
+    # ipam:                           # But we create network manually instead. 
+    #   config:                       # Because it have to be created already if we use "external"
+    #     - subnet: 172.18.1.0/24     # And we required the "external" because we want to connect to it with "docker run" also,
+                                      # Not only docker composer.

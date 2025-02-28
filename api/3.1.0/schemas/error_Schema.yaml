@@ -1,0 +1,39 @@
+ErrorObject:
+  type: object
+  properties:
+    Raw:
+      type: string
+      description: |
+        Original error response as is received from service provider, including header/body where applicable
+    ProviderErrorCode:
+      type: string
+      description: |
+        Original error code sent by the service provider that is extracted (if available)
+    MappedErrorCode:
+      type: string
+      description: Some Internal mapped error code
+    DevMsg:
+      type: string
+      description: |
+        Custom notes/log/message from developer for easier error resolution by OPS team"
+    Severity:
+      type: string
+      description: |
+        Severity Level (NO|LOW|MEDIUM|HIGH) - will trigger notification actions in Smobilpay (e.g. alert ops on LOW and MEDIUM - alert management on HIGH)
+    CustomMsg:
+      type: array
+      items:
+        $ref: "#/TranslationObject"
+
+TranslationObject:
+  type: object
+  properties:
+    Language:
+      type: string
+      description: |
+        Target language to retrieve the translations for (e.g. 'en', 'fr', etc.)
+      example: en
+    Content:
+      type: string
+      description: Translated text for this language
+      example: Translated string

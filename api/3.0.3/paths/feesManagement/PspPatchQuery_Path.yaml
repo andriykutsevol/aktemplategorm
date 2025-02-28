@@ -1,0 +1,44 @@
+patch:
+  security: [] # Overrides global security, making this endpoint public
+  tags:
+    - FeeManagement
+  summary: PspPatchByQuery
+  operationId: PspPatchByQuery
+  parameters:
+    - $ref: "../../parameters/inHeader/Bearer-Api-Key_Parameter.yaml"
+    - $ref: "../../parameters/inHeader/Content-Type_Parameter.yaml"
+    - $ref: "../../parameters/inHeader/X-Correlation-Id_Parameter.yaml"
+    - name: IDs
+      in: query
+      required: false
+      schema:
+        type: array
+        description: Array of db primary keys for query filter
+        items:
+          type: number
+        example: []
+    - name: PspCode
+      in: query
+      required: false
+      schema:
+        type: string
+        description: Psp code in a specific format (Country_code - Psp_shortcode)
+        example: CG-MTN-MTN_1
+    - name: PspCountryCode
+      in: query
+      required: false
+      schema:
+        type: string
+        description: Country code ISO 3166-1 ALPHA-2
+        example: CM
+  requestBody:
+    $ref: "../../requestBodies/PspPatch_RequestBody.yaml#/PspPatchByID"
+  responses:
+    "200":
+      $ref: "../../responses/Updated_Response.yaml"
+    "400":
+      $ref: "../../responses/error_Response.yaml#/BadRequest"
+    "401":
+      $ref: "../../responses/error_Response.yaml#/Unauthorized"
+    "500":
+      $ref: "../../responses/error_Response.yaml#/InternalServerError"

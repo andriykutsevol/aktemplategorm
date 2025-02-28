@@ -1,0 +1,232 @@
+openapi: 3.0.3
+info:
+  title: Some Utililty Service V2.0.0
+  description: |-
+    The Some Utility Service [MUS](https://Some.atlassian.net/wiki/spaces/SCG/pages/3508961396/1040+-+Feature+Request+Some+Utililty+Service+-+MUS) act as a central store of common master data related to Some applications. 
+    It shall provide an API to be called by other Some applications with functionality to:
+    - Add, Update and delete master data
+    - Utility functionality to perform calculations
+    - Offer APIs for other services and systems to access this data
+
+    The scope of this request is to store data for the following use cases:
+
+    - Manage and provide administrative data including Regions, and cities in the countries of CEMAC
+    - Provide withdrawal fees for mobile money
+    - Fuzzy Logic APIs to support https://Some.atlassian.net/wiki/spaces/SET/pages/3486711809Request access 
+    - etc.
+
+  version: 2.0.0
+
+  contact:
+    email: developer@email.com
+    name: Some Developer
+    url: https://www.developer.io/contact
+
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+
+externalDocs:
+  description: Some Utililty Service - MUS
+  url: https://Some.atlassian.net/wiki/spaces/SCG/pages/3508961396/1040+-+Feature+Request+Some+Utililty+Service+-+MUS
+
+servers:
+  - url: http://0.0.0.0:8080
+
+security:
+  - ApiKeyAuth: [] # use the same name as under securitySchemes. To protect all routes.
+
+tags:
+  - name: Auth
+    description: Protecting routes.
+
+  - name: Mobile Money Withdrawal Fee - Management
+    description: When beneficiaries receive money by mobile money into their wallets, there is an extra charge to withdraw this money. This functionality allows caller to configure the different fees in the system
+    externalDocs:
+      description: Technical Implementation
+      url: https://Some.atlassian.net/wiki/spaces/SCG/pages/3509027181/1040+-+Technical+Implementation#Module%3A-Withdrawal-Fees
+
+  - name: Mobile Money Withdrawal Fee - Calculation
+    description: Endpoints to allow caller to calculate the withdrawal fees for a given amount and psp
+    externalDocs:
+      description: Technical Implementation
+      url: https://Some.atlassian.net/wiki/spaces/SCG/pages/3509027181/1040+-+Technical+Implementation#Module%3A-Withdrawal-Fees
+
+paths:
+  /auth:
+    post:
+      security: [] # Overrides global security, making this endpoint public
+      description: Description
+      summary: Generate tocken
+      operationId: Login
+      requestBody:
+        description: Request body
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                UserName:
+                  type: string
+                  example: "User"
+                Password:
+                  type: string
+                  example: "1234"
+              required:
+                - UserName
+                - Password
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  AccessToken:
+                    type: string
+                  TokenType:
+                    type: string
+                  ExpiresAt:
+                    type: integer
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+      tags:
+        - Auth
+
+  /pspfee:
+    post:
+      tags:
+        - Mobile Money Withdrawal Fee - Management
+      description: pspfee
+      summary: Create PSP
+      operationId: CreatePSP
+      parameters:
+        - $ref: "#/components/parameters/X-Correlation-ID"
+      requestBody:
+        $ref: "#/components/requestBodies/CreatePspRequestBody"
+      responses:
+        "200":
+          description: ok
+        "400":
+          $ref: "#/components/responses/BadRequestResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+      security:
+        - ApiKeyAuth: []
+
+components:
+  requestBodies:
+    CreatePspRequestBody:
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/PspObject"
+              - type: object
+                required:
+                  - PspCode
+  responses:
+    BadRequestResponse:
+      description: 400 The specified resource did not pass validation rules
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorObject"
+    UnauthorizedResponse:
+      description: 401 Authorization required to get access to the specified resource
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorObject"
+    InternalServerErrorResponse:
+      description: 500 Something went wrong on the server side
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorObject"
+
+  schemas:
+    TranslationObject:
+      type: object
+      properties:
+        Language:
+          type: string
+          description: |
+            Target language to retrieve the translations for (e.g. 'en', 'fr', etc.)
+          example: en
+        Content:
+          type: string
+          description: Translated text for this language
+          example: Translated string
+
+    ErrorObject:
+      type: object
+      properties:
+        Raw:
+          type: string
+          description: |
+            Original error response as is received from service provider, including header/body where applicable
+        ProviderErrorCode:
+          type: string
+          description: |
+            Original error code sent by the service provider that is extracted (if available)
+        MappedErrorCode:
+          type: string
+          description: Some Internal mapped error code
+        DevMsg:
+          type: string
+          description: |
+            Custom notes/log/message from developer for easier error resolution by OPS team"
+        Severity:
+          type: string
+          description: |
+            Severity Level (NO|LOW|MEDIUM|HIGH) - will trigger notification actions in Smobilpay (e.g. alert ops on LOW and MEDIUM - alert management on HIGH)
+        CustomMsg:
+          type: array
+          items:
+            $ref: "#/components/schemas/TranslationObject"
+    PspObject:
+      type: object
+      properties:
+        PspCode:
+          type: string
+          description: PSP code in a specific format (Country_code - PSP_shortcode)
+          example: CG-MTN-MTN
+        PspCountryCode:
+          type: string
+          description: Country code ISO 3166-1 ALPHA-2
+          example: "CM"
+        PspShortName:
+          type: string
+          description: Short human friendly name of the PSPShort human friendly name of the PSP
+          example: CG-MTN-MTN_1 Short name
+
+  parameters:
+    X-Correlation-ID:
+      name: X-Correlation-ID
+      in: header
+      description: |
+        Unique identifier for every request. 
+        Can be used for tracking down answers 
+        with technical support. 
+        Uses the ULID format (a time-based, sortable UUID). 
+        Note this will be different for every request.
+      required: false
+      schema:
+        type: string
+        format: ulid
+        example: "01F8MECHZX3TBDSZ7XRADM79XV"
+
+  securitySchemes:
+    ApiKeyAuth: # arbitrary name for the security scheme
+      type: apiKey # apiKey, http, oauth2, openIdConnect
+      in: header # can be "header", "query" or "cookie"
+      name: x-api-key # name of the header, query parameter or cookie

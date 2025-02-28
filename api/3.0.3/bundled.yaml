@@ -1,0 +1,782 @@
+openapi: 3.0.3
+info:
+  version: 3.0.3
+  title: Some Utililty Service V3.0.3
+  description: |-
+    The Some Utility Service [MUS](https://Some.atlassian.net/wiki/spaces/SCG/pages/3508961396/1040+-+Feature+Request+Some+Utililty+Service+-+MUS) act as a central store of common master data related to Some applications. 
+    It shall provide an API to be called by other Some applications with functionality to:
+    - Add, Update and delete master data
+    - Utility functionality to perform calculations
+    - Offer APIs for other services and systems to access this data
+
+    The scope of this request is to store data for the following use cases:
+
+    - Manage and provide administrative data including Regions, and cities in the countries of CEMAC
+    - Provide withdrawal fees for mobile money
+    - Fuzzy Logic APIs to support https://Some.atlassian.net/wiki/spaces/SET/pages/3486711809Request access 
+      - etc.
+  contact:
+    email: developer@email.com
+    name: Some Developer
+    url: https://www.developer.io/contact
+  license:
+    name: New BSD License
+    url: https://opensource.org/license/bsd-3-clause
+servers:
+  - url: "{protocol}://{environment}:{port}"
+    variables:
+      protocol:
+        default: http
+        enum:
+          - http
+          - https
+      environment:
+        default: 0.0.0.0
+        enum:
+          - 0.0.0.0
+          - api
+          - api.dev
+          - api.staging
+          - api.test
+      port:
+        default: "8080"
+        enum:
+          - "8080"
+security:
+  - ApiKey: []
+tags:
+  - name: Auth
+    description: Protecting routes.
+  - name: FeeManagement
+    description: When beneficiaries receive money by mobile money into their wallets, there is an extra charge to withdraw this money. This functionality allows caller to configure the different fees in the system
+    externalDocs:
+      description: Technical Implementation
+      url: https://Some.atlassian.net/wiki/spaces/SCG/pages/3509027181/1040+-+Technical+Implementation#Module%3A-Withdrawal-Fees
+  - name: FeeCalculation
+    description: Endpoints to allow caller to calculate the withdrawal fees for a given amount and psp
+    externalDocs:
+      description: Technical Implementation
+      url: https://Some.atlassian.net/wiki/spaces/SCG/pages/3509027181/1040+-+Technical+Implementation#Module%3A-Withdrawal-Fees
+externalDocs:
+  description: Some Utililty Service - MUS
+  url: https://Some.atlassian.net/wiki/spaces/SCG/pages/3508961396/1040+-+Feature+Request+Some+Utililty+Service+-+MUS
+paths:
+  /auth:
+    post:
+      security: []
+      tags:
+        - Auth
+      summary: Generate jwt
+      operationId: Login
+      requestBody:
+        $ref: "#/components/requestBodies/Login_RequestBody"
+      responses:
+        "200":
+          $ref: "#/components/responses/Login_Response"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /pspfee:
+    post:
+      security: []
+      tags:
+        - FeeManagement
+      summary: Create Psp
+      operationId: CreatePsp
+      parameters:
+        - $ref: "#/components/parameters/Bearer-Api-Key_Parameter"
+        - $ref: "#/components/parameters/Content-Type_Parameter"
+        - $ref: "#/components/parameters/X-Correlation-Id_Parameter"
+      requestBody:
+        $ref: "#/components/requestBodies/PspCreate_RequestBody"
+      responses:
+        "201":
+          $ref: "#/components/responses/Psp_Response"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /pspfee/querypspmap:
+    get:
+      security: []
+      tags:
+        - FeeManagement
+      summary: QueryPspMap
+      operationId: QueryPspMap
+      parameters:
+        - $ref: "#/components/parameters/Bearer-Api-Key_Parameter"
+        - $ref: "#/components/parameters/Content-Type_Parameter"
+        - $ref: "#/components/parameters/X-Correlation-Id_Parameter"
+        - name: IDs
+          in: query
+          required: false
+          schema:
+            type: array
+            description: Array of db primary keys for query filter
+            items:
+              type: number
+            example: []
+        - name: PspCode
+          in: query
+          required: false
+          schema:
+            type: string
+            description: Psp code in a specific format (Country_code - Psp_shortcode)
+            example: CG-MTN-MTN_1
+        - name: PspCountryCode
+          in: query
+          required: false
+          schema:
+            type: string
+            description: Country code ISO 3166-1 ALPHA-2
+            example: CM
+        - name: Sort
+          in: query
+          required: false
+          schema:
+            type: array
+            description: Array fields to soft response (ID - ascending, -ID - descending)
+            items:
+              type: string
+              enum:
+                - ID
+                - PspCode
+                - "-ID"
+                - "-PspCode"
+            example:
+              - ID
+              - "-PspCode"
+        - $ref: "#/components/parameters/CurrentPage_Parameter"
+        - $ref: "#/components/parameters/PageSize_Parameter"
+        - $ref: "#/components/parameters/OnlyCount_Parameter"
+      responses:
+        "200":
+          $ref: "#/components/responses/QueryPsp_Response"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /pspfee/querypspjson:
+    get:
+      security: []
+      tags:
+        - FeeManagement
+      summary: PspQueryByJson
+      operationId: PspQueryByJson
+      parameters:
+        - $ref: "#/components/parameters/Bearer-Api-Key_Parameter"
+        - $ref: "#/components/parameters/Content-Type_Parameter"
+        - $ref: "#/components/parameters/X-Correlation-Id_Parameter"
+        - name: filter
+          in: query
+          schema:
+            type: string
+            description: Json sting
+            example: "%7B%22PspCode%22%3A%20%22CG-MTN-MTN_22%22%2C%20%22PspCountryCode%22%3A%20%22CM%22%7D"
+        - name: sort
+          in: query
+          schema:
+            type: string
+            description: Json sting
+            example: "%5B%22ID%22%2C%20%22DESC%22%2C%20%22PspCode%22%2C%20%22ASC%22%5D"
+        - $ref: "#/components/parameters/CurrentPage_Parameter"
+        - $ref: "#/components/parameters/PageSize_Parameter"
+        - $ref: "#/components/parameters/OnlyCount_Parameter"
+      responses:
+        "200":
+          $ref: "#/components/responses/QueryPsp_Response"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /pspfee/querypsprequest:
+    get:
+      security: []
+      tags:
+        - FeeManagement
+      summary: PspQueryByRequest
+      operationId: PspQueryByRequest
+      parameters:
+        - $ref: "#/components/parameters/Bearer-Api-Key_Parameter"
+        - $ref: "#/components/parameters/Content-Type_Parameter"
+        - $ref: "#/components/parameters/X-Correlation-Id_Parameter"
+        - name: IDs
+          in: query
+          required: false
+          schema:
+            type: array
+            description: Array of db primary keys for query filter
+            items:
+              type: number
+            example: []
+        - name: PspCode
+          in: query
+          required: false
+          schema:
+            type: string
+            description: Psp code in a specific format (Country_code - Psp_shortcode)
+            example: CG-MTN-MTN_1
+        - name: PspCountryCode
+          in: query
+          required: false
+          schema:
+            type: string
+            description: Country code ISO 3166-1 ALPHA-2
+            example: CM
+        - name: Sort
+          in: query
+          required: false
+          schema:
+            type: array
+            description: Array fields to soft response (ID - ascending, -ID - descending)
+            items:
+              type: string
+              enum:
+                - ID
+                - PspCode
+                - "-ID"
+                - "-PspCode"
+            example:
+              - ID
+              - "-PspCode"
+        - $ref: "#/components/parameters/CurrentPage_Parameter"
+        - $ref: "#/components/parameters/PageSize_Parameter"
+        - $ref: "#/components/parameters/OnlyCount_Parameter"
+      responses:
+        "200":
+          $ref: "#/components/responses/QueryPsp_Response"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /pspfee/patchbyid/{ID}:
+    patch:
+      tags:
+        - FeeManagement
+      summary: PspPatchByID
+      operationId: PspPatchByID
+      parameters:
+        - $ref: "#/components/parameters/Bearer-Api-Key_Parameter"
+        - $ref: "#/components/parameters/Content-Type_Parameter"
+        - $ref: "#/components/parameters/X-Correlation-Id_Parameter"
+        - $ref: "#/components/parameters/ID_Parameter"
+      requestBody:
+        $ref: "#/components/requestBodies/PspPatchByID"
+      responses:
+        "200":
+          $ref: "#/components/responses/Psp_Response"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /pspfee/patchbyarray:
+    patch:
+      security: []
+      tags:
+        - FeeManagement
+      summary: PspPatchByrray
+      operationId: PspPatchByrray
+      parameters:
+        - $ref: "#/components/parameters/Bearer-Api-Key_Parameter"
+        - $ref: "#/components/parameters/Content-Type_Parameter"
+        - $ref: "#/components/parameters/X-Correlation-Id_Parameter"
+      requestBody:
+        $ref: "#/components/requestBodies/PspPatchByArray"
+      responses:
+        "200":
+          $ref: "#/components/responses/Updated_Response"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /pspfee/patchbyquery:
+    patch:
+      security: []
+      tags:
+        - FeeManagement
+      summary: PspPatchByQuery
+      operationId: PspPatchByQuery
+      parameters:
+        - $ref: "#/components/parameters/Bearer-Api-Key_Parameter"
+        - $ref: "#/components/parameters/Content-Type_Parameter"
+        - $ref: "#/components/parameters/X-Correlation-Id_Parameter"
+        - name: IDs
+          in: query
+          required: false
+          schema:
+            type: array
+            description: Array of db primary keys for query filter
+            items:
+              type: number
+            example: []
+        - name: PspCode
+          in: query
+          required: false
+          schema:
+            type: string
+            description: Psp code in a specific format (Country_code - Psp_shortcode)
+            example: CG-MTN-MTN_1
+        - name: PspCountryCode
+          in: query
+          required: false
+          schema:
+            type: string
+            description: Country code ISO 3166-1 ALPHA-2
+            example: CM
+      requestBody:
+        $ref: "#/components/requestBodies/PspPatchByID"
+      responses:
+        "200":
+          $ref: "#/components/responses/Updated_Response"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+components:
+  securitySchemes:
+    ApiKey:
+      type: apiKey
+      in: header
+      name: x-api-key
+  schemas:
+    LoginObject:
+      type: object
+      properties:
+        UserName:
+          type: string
+          example: User
+        Password:
+          type: string
+          example: "1234"
+    AuthObject:
+      type: object
+      properties:
+        AccessToken:
+          type: string
+          example: Bearer
+        TokenType:
+          type: string
+          example: eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MzQxMDk3MjAsImlhdCI6MTczMzkzNzcyMCwibmJmIjoxNzMzOTM3NzIwLCJzdWIiOiJkZTk1Y2E5ZC00ODk4LTQ2ZjQtYWY3OS1iMWU3MDMyNmI0YzEifQ.-8C4EPXoZMP8XDyU8t-3vRaAub2pZg_64oXgg73f4c9swb7tI1jCdnXOPCiiwgshtTB0V-vVTSz0unImrjGQtg
+        ExpiresAt:
+          type: integer
+          format: int64
+          description: Unix timestamp in seconds since the epoch (1970-01-01T00:00:00Z).
+          example: 1702211200
+    TranslationObject:
+      type: object
+      properties:
+        Language:
+          type: string
+          description: |
+            Target language to retrieve the translations for (e.g. 'en', 'fr', etc.)
+          example: en
+        Content:
+          type: string
+          description: Translated text for this language
+          example: Translated string
+    ErrorObject:
+      type: object
+      properties:
+        Raw:
+          type: string
+          description: |
+            Original error response as is received from service provider, including header/body where applicable
+        ProviderErrorCode:
+          type: string
+          description: |
+            Original error code sent by the service provider that is extracted (if available)
+        MappedErrorCode:
+          type: string
+          description: Some Internal mapped error code
+        DevMsg:
+          type: string
+          description: |
+            Custom notes/log/message from developer for easier error resolution by OPS team"
+        Severity:
+          type: string
+          description: |
+            Severity Level (NO|LOW|MEDIUM|HIGH) - will trigger notification actions in Smobilpay (e.g. alert ops on LOW and MEDIUM - alert management on HIGH)
+        CustomMsg:
+          type: array
+          items:
+            $ref: "#/components/schemas/TranslationObject"
+    PspObject:
+      type: object
+      properties:
+        PspCode:
+          type: string
+          description: Psp code in a specific format (Country_code - Psp_shortcode)
+          example: CG-MTN-MTN
+        PspCountryCode:
+          type: string
+          description: Country code ISO 3166-1 ALPHA-2
+          example: CM
+        PspShortName:
+          type: string
+          description: Short human friendly name of the PspShort human friendly name of the Psp
+          example: CG-MTN-MTN_1 Short name
+    PspCreate:
+      allOf:
+        - $ref: "#/components/schemas/PspObject"
+        - type: object
+          required:
+            - PspCode
+    AuditDBRecordObject:
+      type: object
+      properties:
+        CreatedAt:
+          type: string
+          format: date-time
+          description: It should be created by a trigger function in the database.
+        CreatedBy:
+          type: string
+          format: uuid
+          description: It should be provided by a gin(golang) middleware.
+        UpdatedAt:
+          type: string
+          format: date-time
+          description: It should be updated by a trigger function in the database.
+        UpdatedBy:
+          type: string
+          format: uuid
+          description: It should be provided by a gin(golang) middleware.
+        DeletedAt:
+          description: It should be updated by a trigger function in the database.
+          type: string
+          format: date-time
+          nullable: true
+        DeletedBy:
+          description: It should be provided by a gin(golang) middleware.
+          type: string
+          format: uuid
+          nullable: true
+    AuditDBRecordResponse:
+      allOf:
+        - $ref: "#/components/schemas/AuditDBRecordObject"
+        - type: object
+          required:
+            - CreatedAt
+            - CreatedBy
+            - UpdatedAt
+            - UpdatedBy
+    PspResponse:
+      allOf:
+        - $ref: "#/components/schemas/PspObject"
+        - type: object
+          properties:
+            ID:
+              type: integer
+              description: ID in the database.
+              example: 1
+          required:
+            - ID
+            - PspCode
+        - $ref: "#/components/schemas/AuditDBRecordResponse"
+    Pagination_Schema:
+      type: object
+      properties:
+        CurrentPage:
+          description: Current Page
+          type: integer
+        PageSize:
+          description: Page Size
+          type: integer
+        PagesCount:
+          description: Total count
+          type: integer
+        HasMore:
+          description: Total count
+          type: boolean
+        ItemsCount:
+          type: integer
+          format: int64
+          description: Total
+      required:
+        - CurrentPage
+        - PageSize
+        - PagesCount
+        - HasMore
+        - ItemsCount
+    PaginatedPspResponse:
+      type: object
+      properties:
+        pagination:
+          $ref: "#/components/schemas/Pagination_Schema"
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/PspResponse"
+    PspPatchByArray:
+      allOf:
+        - $ref: "#/components/schemas/PspObject"
+        - type: object
+          properties:
+            ID:
+              type: integer
+              description: ID in the database.
+              example: 1
+          required:
+            - ID
+    Updated_Schema:
+      type: object
+      properties:
+        updatedCount:
+          type: integer
+          description: Number of users successfully updated.
+        updatedIDs:
+          type: array
+          items:
+            type: integer
+            description: IDs of the updated users.
+      required:
+        - updatedCount
+        - updatedIDs
+  requestBodies:
+    Login_RequestBody:
+      description: Request payload to generate jwt
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/LoginObject"
+              - type: object
+                required:
+                  - UserName
+                  - Password
+    PspCreate_RequestBody:
+      description: Request body to create Psp
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/PspCreate"
+    PspPatchByID:
+      description: Request body to update psp by ID in path
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/PspObject"
+              - $ref: "#/components/schemas/AuditDBRecordObject"
+    PspPatchByArray:
+      description: Request body to update psp by array of objects with IDs
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/PspPatchByArray"
+  headers:
+    Date_Header:
+      description: Date header in response
+      schema:
+        type: string
+        format: date-time
+      example: "2024-10-27T12:34:56.123456Z"
+    X-Correlation-Id_Header:
+      description: X-Correlation-Id header in response
+      schema:
+        type: string
+      example: 01JETYSDHJ012H49C5G7PGHKB0
+    Content-Length_Header:
+      description: Content-Length header in response
+      schema:
+        type: integer
+      example: 272
+    Content-Type_Header:
+      description: The media type of the returned content
+      schema:
+        type: string
+      example: application/json
+  responses:
+    Login_Response:
+      description: 200 Expected response to a valid request
+      headers:
+        Date:
+          $ref: "#/components/headers/Date_Header"
+        X-Correlation-Id:
+          $ref: "#/components/headers/X-Correlation-Id_Header"
+        Content-Length:
+          $ref: "#/components/headers/Content-Length_Header"
+        Content-Type:
+          $ref: "#/components/headers/Content-Type_Header"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/AuthObject"
+    BadRequest:
+      description: 400 Bad request
+      headers:
+        Date:
+          $ref: "#/components/headers/Date_Header"
+        X-Correlation-Id:
+          $ref: "#/components/headers/X-Correlation-Id_Header"
+        Content-Length:
+          $ref: "#/components/headers/Content-Length_Header"
+        Content-Type:
+          $ref: "#/components/headers/Content-Type_Header"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorObject"
+    Unauthorized:
+      description: 401 Authorization required to get access to the specified resource
+      headers:
+        Date:
+          $ref: "#/components/headers/Date_Header"
+        X-Correlation-Id:
+          $ref: "#/components/headers/X-Correlation-Id_Header"
+        Content-Length:
+          $ref: "#/components/headers/Content-Length_Header"
+        Content-Type:
+          $ref: "#/components/headers/Content-Type_Header"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorObject"
+    InternalServerError:
+      description: 500 Something went wrong on the server side
+      headers:
+        Date:
+          $ref: "#/components/headers/Date_Header"
+        X-Correlation-Id:
+          $ref: "#/components/headers/X-Correlation-Id_Header"
+        Content-Length:
+          $ref: "#/components/headers/Content-Length_Header"
+        Content-Type:
+          $ref: "#/components/headers/Content-Type_Header"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorObject"
+    Psp_Response:
+      description: 200/201 Psp was updated/created
+      headers:
+        Date:
+          $ref: "#/components/headers/Date_Header"
+        X-Correlation-Id:
+          $ref: "#/components/headers/X-Correlation-Id_Header"
+        Content-Length:
+          $ref: "#/components/headers/Content-Length_Header"
+        Content-Type:
+          $ref: "#/components/headers/Content-Type_Header"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/PspResponse"
+    QueryPsp_Response:
+      description: 200 Psp was queried
+      headers:
+        Date:
+          $ref: "#/components/headers/Date_Header"
+        X-Correlation-Id:
+          $ref: "#/components/headers/X-Correlation-Id_Header"
+        Content-Length:
+          $ref: "#/components/headers/Content-Length_Header"
+        Content-Type:
+          $ref: "#/components/headers/Content-Type_Header"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/PaginatedPspResponse"
+              - type: object
+                required:
+                  - results
+    Updated_Response:
+      description: 200 response to multiple updates
+      headers:
+        Date:
+          $ref: "#/components/headers/Date_Header"
+        X-Correlation-Id:
+          $ref: "#/components/headers/X-Correlation-Id_Header"
+        Content-Length:
+          $ref: "#/components/headers/Content-Length_Header"
+        Content-Type:
+          $ref: "#/components/headers/Content-Type_Header"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Updated_Schema"
+  parameters:
+    Bearer-Api-Key_Parameter:
+      name: x-api-key
+      in: header
+      description: |
+        Bearer Json Web Token
+      required: true
+      schema:
+        type: string
+      example: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MzQ2MTI1OTMsImlhdCI6MTczNDQ0MDU5MywibmJmIjoxNzM0NDQwNTkzLCJzdWIiOiJkZTk1Y2E5ZC00ODk4LTQ2ZjQtYWY3OS1iMWU3MDMyNmI0YzEifQ.-i3szbe7_zMPTZi2uBpqkNFQAMYb_9Kybv6Meq_9V2tA1v3-78By7U2hEH8t_6PPw1BurWGDb9eJ6RTys42k0A
+    Content-Type_Parameter:
+      name: Content-Type
+      in: header
+      description: |
+        The content type of the request body. Supported values:
+        - `application/json` for JSON payloads
+        - `application/xml` for XML payloads
+        - `multipart/form-data` for file uploads
+      required: true
+      schema:
+        type: string
+        enum:
+          - application/json
+          - application/xml
+          - multipart/form-data
+      example: application/json
+    X-Correlation-Id_Parameter:
+      name: X-Correlation-Id
+      in: header
+      description: |
+        Unique identifier for every request. 
+        Can be used for tracking down answers 
+        with technical support. 
+        Uses the ULID format (a time-based, sortable UUID). 
+        Note this will be different for every request.
+      required: false
+      schema:
+        type: string
+        format: ulid
+      example: 01F8MECHZX3TBDSZ7XRADM79XV
+    CurrentPage_Parameter:
+      name: CurrentPage
+      in: query
+      schema:
+        type: integer
+        default: 1
+        minimum: 1
+    PageSize_Parameter:
+      name: PageSize
+      in: query
+      schema:
+        type: integer
+        default: 10
+        minimum: 3
+    OnlyCount_Parameter:
+      name: OnlyCount
+      in: query
+      schema:
+        type: boolean
+        default: false
+    ID_Parameter:
+      name: ID
+      in: path
+      required: true
+      schema:
+        type: number

@@ -1,0 +1,8 @@
+name: x-api-key
+in: header
+description: |
+  Bearer Json Web Token
+required: true
+schema:
+  type: string
+example: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MzQxMDk3MjAsImlhdCI6MTczMzkzNzcyMCwibmJmIjoxNzMzOTM3NzIwLCJzdWIiOiJkZTk1Y2E5ZC00ODk4LTQ2ZjQtYWY3OS1iMWU3MDMyNmI0YzEifQ.-8C4EPXoZMP8XDyU8t-3vRaAub2pZg_64oXgg73f4c9swb7tI1jCdnXOPCiiwgshtTB0V-vVTSz0unImrjGQtg

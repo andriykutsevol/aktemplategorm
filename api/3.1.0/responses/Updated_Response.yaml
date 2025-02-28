@@ -1,0 +1,14 @@
+description: 200 response to multiple updates
+headers:
+  Date:
+    $ref: "./headers/Date_Header.yaml"
+  X-Correlation-Id:
+    $ref: "./headers/X-Correlation-Id_Header.yaml"
+  Content-Length:
+    $ref: "./headers/Content-Length_Header.yaml"
+  Content-Type:
+    $ref: "./headers/Content-Type_Header.yaml"
+content:
+  application/json:
+    schema:
+      $ref: "../schemas/Updated_Schema.yaml"

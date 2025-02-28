@@ -1,0 +1,1561 @@
+openapi: 3.0.3
+info:
+  title: Some Utililty Service - MUS
+  description: |-
+    The Some Utility Service [MUS](https://Some.atlassian.net/wiki/spaces/SCG/pages/3508961396/1040+-+Feature+Request+Some+Utililty+Service+-+MUS) act as a central store of common master data related to Some applications. 
+    It shall provide an API to be called by other Some applications with functionality to:
+    - Add, Update and delete master data
+    - Utility functionality to perform calculations
+    - Offer APIs for other services and systems to access this data
+
+    The scope of this request is to store data for the following use cases:
+
+    - Manage and provide administrative data including Regions, and cities in the countries of CEMAC
+    - Provide withdrawal fees for mobile money
+    - Fuzzy Logic APIs to support https://Some.atlassian.net/wiki/spaces/SET/pages/3486711809Request access 
+    - etc.
+
+  version: 1.0.0
+
+externalDocs:
+  description: Some Utililty Service - MUS
+  url: https://Some.atlassian.net/wiki/spaces/SCG/pages/3508961396/1040+-+Feature+Request+Some+Utililty+Service+-+MUS
+
+servers:
+  - url: http://0.0.0.0:8080
+tags:
+  - name: Administrative Region
+    description: This functionality centrally stores administrative regions of countries in the CEMAC.
+    externalDocs:
+      description: Technical Implementation
+      url: https://Some.atlassian.net/wiki/spaces/SCG/pages/3509027181/1040+-+Technical+Implementation#Module%3A-Administrative-Region
+
+  - name: Mobile Money Withdrawal Fee
+    description: When beneficiaries receive money by mobile money into their wallets, there is an extra charge to withdraw this money.
+    externalDocs:
+      description: Technical Implementation
+      url: https://Some.atlassian.net/wiki/spaces/SCG/pages/3509027181/1040+-+Technical+Implementation#Module%3A-Withdrawal-Fees
+
+# ===============================================================================
+# Administrative Region Module
+# ===============================================================================
+
+#----------------------------------------------------------------
+#----------------------------------------------------------------
+# Management API
+#----------------------------------------------------------------
+#----------------------------------------------------------------
+
+#----------------------------------------------------------------
+# Country
+# ADMIN LEVEL 1
+# NO API. JUST A TABLE IN A DATABASE.
+#----------------------------------------------------------------
+
+#----------------------------------------------------------------
+# REGION
+# ADMIN LEVEL 2
+#----------------------------------------------------------------
+
+paths:
+  /adminlevel/management/country/{country_code_a2}/region:
+    post:
+      tags:
+        - Administrative Region
+      operationId: AddRegionToCountry
+      summary: Add a new Region to a Country
+      parameters:
+        - name: country_code_a2
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Region
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Region"
+      responses:
+        "default":
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /adminlevel/management/country/{country_code_a2}/region/{region_code}:
+    patch:
+      tags:
+        - Administrative Region
+      operationId: UpdateRegion
+      summary: Update an existing Region in a given Country
+      parameters:
+        - name: country_code_a2
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: region_code
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Update an existent region
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Region"
+      responses:
+        "default":
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      tags:
+        - Administrative Region
+      operationId: DeleteRegion
+      summary: It should use the "Soft DELETE CASCADE"
+      parameters:
+        - name: country_code_a2
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: region_code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "default":
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  #----------------------------------------------------------------
+  # SUB REGION
+  # ADMIN LEVEL 3
+  #----------------------------------------------------------------
+
+  ? /adminlevel/management/country/{country_code_a2}/region/{region_code}/subregion
+  : post:
+      tags:
+        - Administrative Region
+      operationId: AddSubRegionToCountry
+      summary: Add a new Sub Region to given Country and Region
+      parameters:
+        - name: country_code_a2
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: region_code
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Sub Region
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubRegion"
+      responses:
+        "default":
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  ? /adminlevel/management/country/{country_code_a2}/region/{region_code}/subregion/{sub_region_code}
+  : patch:
+      tags:
+        - Administrative Region
+      operationId: UpdateSubRegion
+      summary: Update an existing Sub Region in a given Country for a given Region
+      parameters:
+        - name: country_code_a2
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: region_code
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: sub_region_code
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Update an existent region
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubRegion"
+      responses:
+        "default":
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      tags:
+        - Administrative Region
+      operationId: DeleteSubRegion
+      summary: It should use the "Soft DELETE CASCADE"
+      parameters:
+        - name: country_code_a2
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: region_code
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: sub_region_code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "default":
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  #----------------------------------------------------------------
+  # ADMIN LEVEL 4
+  #----------------------------------------------------------------
+
+  ? /adminlevel/management/country/{country_code_a2}/region/{region_code}/subregion/{sub_region_code}/adminlevel4
+  : post:
+      tags:
+        - Administrative Region
+      operationId: AddAdminLevel4ToCountry
+      summary: Add a new Admin Level 4 to given Sub Region
+      parameters:
+        - name: country_code_a2
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: region_code
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: sub_region_code
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Sub Region
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminLevel4"
+      responses:
+        "default":
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  ? /adminlevel/management/country/{country_code_a2}/region/{region_code}/subregion/{sub_region_code}/adminlevel4/{admin_level_4_code}
+  : patch:
+      tags:
+        - Administrative Region
+      operationId: UpdateAdminLevel4
+      summary: Update an existing Sub Region in a given Country for a given Region
+      parameters:
+        - name: country_code_a2
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: region_code
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: sub_region_code
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: admin_level_4_code
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Update an existent region
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminLevel4"
+      responses:
+        "default":
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      tags:
+        - Administrative Region
+      operationId: DeleteAdminLevel4
+      summary: It should use the "Soft DELETE CASCADE"
+      parameters:
+        - name: country_code_a2
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: region_code
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: sub_region_code
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: admin_level_4_code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "default":
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  #----------------------------------------------------------------
+  # City
+  #----------------------------------------------------------------
+
+  ? /adminlevel/management/country/{country_code_a2}/region/{region_code}/subregion/{sub_region_code}/adminlevel4/city
+  : post:
+      tags:
+        - Administrative Region
+      summary: Add a new City to Admin Level 4
+      operationId: AddCity
+      parameters:
+        - name: country_code_a2
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: region_code
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: sub_region_code
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/City"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessfulOperation"
+        "default":
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  ? /adminlevel/management/country/{country_code_a2}/region/{region_code}/subregion/{sub_region_code}/adminlevel4/city/{id}
+  : patch:
+      tags:
+        - Administrative Region
+      operationId: UpdateCity
+      summary: Update an existing City
+      parameters:
+        - name: country_code_a2
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: region_code
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: sub_region_code
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        description: Update an existent City
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/City"
+      responses:
+        "default":
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      tags:
+        - Administrative Region
+      operationId: DeleteCity
+      summary: Delete City by it's ID.
+      parameters:
+        - name: country_code_a2
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: region_code
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: sub_region_code
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "default":
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  #----------------------------------------------------------------
+  #----------------------------------------------------------------
+  # Functional API
+  #----------------------------------------------------------------
+  #----------------------------------------------------------------
+
+  /adminlevel/functional/country/{country_code_a2}/region:
+    get:
+      tags:
+        - Administrative Region
+      operationId: ListRegionInCountry
+      summary: List regions in a Country (country code ISO 3166-1 ALPHA-2)
+      description: Allows the requestor to get a list of all regions for a given country. Sort Regions alphabetically by Region_name_EN
+      parameters:
+        - name: country_code_a2
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedRegionResponse"
+        "404":
+          description: Country not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundErrorResponse"
+
+        "default":
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  ? /adminlevel/functional/country/{country_code_a2}/region/{region_code}/subregion
+  : get:
+      tags:
+        - Administrative Region
+      operationId: ListSubRegionInRegion
+      summary: List Sub Retgons in a Region
+      description: Allows the requestor to get a list of all Sub Regions for a given Region. Sort Sub Regions alphabetically by Sub_Region_name_EN
+      parameters:
+        - name: country_code_a2
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: region_code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedSubRegionResponse"
+        "404":
+          description: Country not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundErrorResponse"
+
+        "default":
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  ? /adminlevel/functional/country/{country_code_a2}/region/{region_code}/subregion/{sub_region_code}
+  : get:
+      tags:
+        - Administrative Region
+      operationId: ListAdminLevel4InSubRegion
+      summary: List AdminLevel4 in a Sub Region
+      description: Allows the requestor to get a list of all AdminLevel4 for a given Sub Region. Sort AdminLevel4 alphabetically by Admin_Level_4_EN
+      parameters:
+        - name: country_code_a2
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: region_code
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: sub_region_code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedAdminLevel4Response"
+        "404":
+          description: Country not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundErrorResponse"
+
+        "default":
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /adminlevel/functional/country/{country_code_a2}/region/{region_code}/city:
+    get:
+      tags:
+        - Administrative Region
+      operationId: ListCityInRegion
+      summary: List cities in Region
+      description: Provide list of cities in a region. Sort Cities alphabetically
+      parameters:
+        - name: country_code_a2
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: region_code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedCityResponse"
+        "404":
+          description: Region not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundErrorResponse"
+        "default":
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  ? /adminlevel/functional/country/{country_code_a2}/region/{region_code}/city/{id}
+  : get:
+      tags:
+        - Administrative Region
+      operationId: GetCityInRegion
+      summary: Get City in Region by ID
+      parameters:
+        - name: country_code_a2
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: region_code
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CityResponse"
+        "default":
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /adminlevel/functional/country/{country_code_a2}/subregion/byregion:
+    get:
+      tags:
+        - Administrative Region
+      operationId: ListSubregionInCountryByRegion
+      summary: List Subregions in a Country grouped by Region.
+      description: Provide list of Sub Regions in a Country grouped by Region. Sort Sub Regions alphabetically
+      parameters:
+        - name: country_code_a2
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedSubRegionByRegionResponse"
+        "404":
+          description: Country not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundErrorResponse"
+
+        "default":
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  ? /adminlevel/functional/country/{country_code_a2}/region/{region_code}/adminlevel4/bysubregion
+  : get:
+      tags:
+        - Administrative Region
+      operationId: ListAdminLevel4InCountryBySubRegion
+      summary: List AdminLevel4 in a Region grouped by SubRegion.
+      description: Provide list of AdminLevel4 in a Region grouped by Sub Region. Sort AdminLevel4 alphabetically
+      parameters:
+        - name: country_code_a2
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: region_code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedAdminLevel4BySubRegionResponse"
+        "404":
+          description: Country not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundErrorResponse"
+
+        "default":
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /adminlevel/functional/country/{country_code_a2}/city/byregion:
+    get:
+      tags:
+        - Administrative Region
+      operationId: ListCityInCountryByRegion
+      summary: List Cities in a Country grouped by Region. Sort Cities alphabetically
+      description: Provide list cities in a country grouped by region. Sort Cities alphabetically
+      parameters:
+        - name: country_code_a2
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedCitiesByRegionResponse"
+        "404":
+          description: Country not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundErrorResponse"
+
+        "default":
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ===============================================================================
+  # Withdrawal Fees Module
+  # ===============================================================================
+
+  #----------------------------------------------------------------
+  #----------------------------------------------------------------
+  # Management API
+  #----------------------------------------------------------------
+  #----------------------------------------------------------------
+
+  /pspfee/set/management/{psp_code}:
+    post:
+      tags:
+        - Mobile Money Withdrawal Fee
+      operationId: AddMobileProviderFeeSet
+      summary: Create new Fee Set. A set once created cannot be modified! Any modification will create a new set.
+      description: This entity stores a fee set for a supported Payment Service Providers (Mobile Money Operators) in a generic format.
+      parameters:
+        - name: psp_code
+          in: path
+          required: true
+          description: PSP code
+          schema:
+            type: string
+      requestBody:
+        description: Add Mobile Provider Fee
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PSPFeeSet"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessfulOperation"
+        "default":
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    get:
+      tags:
+        - Mobile Money Withdrawal Fee
+      operationId: ListMobileProviderFeeSet
+      summary: List a Fee Sets for specific PSP
+      parameters:
+        - name: psp_code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedPSPFeeSetResponse"
+        "default":
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /pspfee/set/management/{psp_code}/{pspfeeset_id}:
+    get:
+      tags:
+        - Mobile Money Withdrawal Fee
+      operationId: GetMobileProviderFeeSet
+      summary: Get a specific Fee Set
+      parameters:
+        - name: psp_code
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: pspfeeset_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PSPFeeSetResponse"
+        "default":
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    delete:
+      tags:
+        - Mobile Money Withdrawal Fee
+      operationId: DeleteMobileProviderFeeSet
+      summary: Set a Fee Set as deleted (is_active = FALSE)
+      parameters:
+        - name: psp_code
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: pspfeeset_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "default":
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /pspfee/range/management/{pspfeeset_id}:
+    post:
+      tags:
+        - Mobile Money Withdrawal Fee
+      operationId: AddMobileProviderFeeRange
+      summary: Add Fee Range for specifict Fee Set.
+      parameters:
+        - name: pspfeeset_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: PSP Fee Range
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PSPFeeRange"
+      responses:
+        "default":
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    get:
+      tags:
+        - Mobile Money Withdrawal Fee
+      operationId: ListFeeSetRanges
+      summary: List Fee Ranges for specific Fee Set
+      parameters:
+        - name: pspfeeset_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedPSPFeeRangeResponse"
+        "default":
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /pspfee/range/management/{pspfeeset_id}/{feerange_id}:
+    get:
+      tags:
+        - Mobile Money Withdrawal Fee
+      operationId: GetFeeSetRange
+      summary: Get a Fee Range for cpecific Fee Set
+      parameters:
+        - name: pspfeeset_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: feerange_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PSPFeeRangeResponse"
+        "default":
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    delete:
+      tags:
+        - Mobile Money Withdrawal Fee
+      operationId: DeleteMobileProviderFeeRanges
+      summary: Delete row from the Fee Ranges.
+      description: Here we can use the "pspfeeset_id" to verify that the "feerange_id" indeed belongs to correct Fee Set.
+      parameters:
+        - name: pspfeeset_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: feerange_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "default":
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  #----------------------------------------------------------------
+  #----------------------------------------------------------------
+  # Functional API
+  #----------------------------------------------------------------
+  #----------------------------------------------------------------
+
+  /pspfee/set/functional/{psp_code}/{amount}:
+    get:
+      tags:
+        - Mobile Money Withdrawal Fee
+      operationId: CalculateFeeForAmount
+      summary: Calculate and return the withdrawal fees for given amount
+      description: dentify the range in which the
+      parameters:
+        - name: psp_code
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: amount
+          in: path
+          required: true
+          schema:
+            type: string
+            example: "3.99"
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 3.99
+
+  /pspfee/set/functional/{psp_code}:
+    post:
+      tags:
+        - Mobile Money Withdrawal Fee
+      operationId: CalculateListFeeForAmount
+      summary: Calculate and return the withdrawal fees for a list of amounts.
+      description: Bulk operation
+      parameters:
+        - name: psp_code
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: List of amounts
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: number
+              example: [3.99, 4.99, 5.99]
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeeAmountListForPSP"
+
+# ===============================================================================
+# Shared Components
+# ===============================================================================
+
+components:
+  schemas:
+    Pagination:
+      type: object
+      properties:
+        currentPage:
+          description: Current Page
+          type: integer
+        pageSize:
+          description: Page Size
+          type: integer
+        total:
+          description: Total count
+          type: integer
+
+    SuccessfulOperation:
+      type: string
+      description: Successful operation
+      example: Successful operation
+
+    ErrorResponse:
+      type: object
+      properties:
+        raw:
+          type: string
+        providerErrorCode:
+          type: string
+        mappedErrorCode:
+          type: string
+        devMsg:
+          type: string
+        severity:
+          type: string
+        customerMsg:
+          type: object
+          properties:
+            language:
+              type: string
+              example: "en"
+            content:
+              type: string
+              example: "Translated string"
+
+    NotFoundErrorResponse:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: Not Found (404).
+
+    AuditLog:
+      type: object
+      properties:
+        created_at:
+          type: string
+          description: It should be created by a trigger function in the database.
+        updated_at:
+          type: string
+          description: It should be updated by a trigger function in the database.
+        deleted_at:
+          type: string
+          description: It should be updated by a trigger function in the database.
+        created_by_guid:
+          type: string
+          description: It should be provided by a gin(golang) middleware.
+        updated_by_guid:
+          type: string
+          description: It should be provided by a gin(golang) middleware.
+        deleted_by_guid:
+          type: string
+          description: It should be provided by a gin(golang) middleware.
+
+    #----------------------------------------------------------------
+    # REGION
+    #----------------------------------------------------------------
+
+    Region:
+      type: object
+      properties:
+        country_name_en:
+          type: string
+          example: Central African Republic
+          description: Country name in English
+        country_name_fr:
+          type: string
+          example: République Centrafricaine
+          description: Country name in French
+        country_name_short:
+          type: string
+          example: RCA
+          description: Short name for country. The full name is usually longer. This short name is used as generic name.
+        country_code_2:
+          type: string
+          example: CF
+          description: Country code ISO 3166-1 ALPHA-2
+        country_code_3:
+          type: string
+          example: CAF
+          description: Country code ISO 3166-1 ALPHA-3
+        region_code:
+          type: string
+          example: CF-BB
+          description: PRIMARY IDENTIFIER of a region. The Region code is in the notation of ISO 3166-1
+        region_name_en:
+          type: string
+          example: Bamingui-Bangoran
+          description: Region name in English
+        region_name_ft:
+          type: string
+          example: Bamingui-Bangoran
+          description: Region name in French
+        is_active:
+          type: boolean
+          default: true
+
+    RegionResponse:
+      allOf:
+        - $ref: "#/components/schemas/Region"
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int32
+
+    PaginatedRegionResponse:
+      type: object
+      properties:
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/RegionResponse"
+
+    #----------------------------------------------------------------
+    # SUB REGION
+    #----------------------------------------------------------------
+
+    SubRegion:
+      type: object
+      properties:
+        sub_region_name_en:
+          type: string
+          example: varchar(16)
+          description: Sub Region name in English
+        sub_region_name_fr:
+          type: string
+          example: varchar(16)
+          description: Sub Region name in French
+        sub_region_code:
+          type: string
+          example: varchar(16)
+          description: Sub Region Code
+
+    SubRegionResponse:
+      allOf:
+        - $ref: "#/components/schemas/SubRegion"
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int32
+
+    PaginatedSubRegionResponse:
+      type: object
+      properties:
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SubRegionResponse"
+
+    # [
+    #   {
+    #     "Region Code": ["SubRegion Code", "SubRegion Code", "SubRegion Code"]
+    #   },
+    #   {
+    #     "Region Code": ["SubRegion Code", "SubRegion Code", "SubRegion Code"]
+    #   }
+    # ]
+    SubRegionByRegion:
+      type: array
+      items:
+        type: object
+        additionalProperties:
+          type: array
+          items:
+            type: string
+
+    PaginatedSubRegionByRegionResponse:
+      type: object
+      properties:
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SubRegionByRegion"
+
+    #----------------------------------------------------------------
+    # ADMIN LEVEL 4
+    #----------------------------------------------------------------
+
+    AdminLevel4:
+      type: object
+      properties:
+        sub_region_name_en:
+          type: string
+          example: varchar(16)
+          description: Admin Level 4 name in English
+        sub_region_name_fr:
+          type: string
+          example: varchar(16)
+          description: Admin Level 4 name in French
+        sub_region_code:
+          type: string
+          example: varchar(16)
+          description: Admin Level 4 Code
+
+    AdminLevel4Response:
+      allOf:
+        - $ref: "#/components/schemas/AdminLevel4"
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int32
+
+    PaginatedAdminLevel4Response:
+      type: object
+      properties:
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SubRegionResponse"
+
+    # [
+    #   {
+    #     "SubRegion Code": ["AdminLevel4 Code", "AdminLevel4 Code", "AdminLevel4 Code"]
+    #   },
+    #   {
+    #     "SubRegion Code": ["AdminLevel4 Code", "AdminLevel4 Code", "AdminLevel4 Code"]
+    #   }
+    # ]
+    AdminLevel4BySubRegion:
+      type: array
+      items:
+        type: object
+        additionalProperties:
+          type: array
+          items:
+            type: string
+
+    PaginatedAdminLevel4BySubRegionResponse:
+      type: object
+      properties:
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminLevel4BySubRegion"
+
+    #----------------------------------------------------------------
+    # CITY
+    #----------------------------------------------------------------
+
+    City:
+      type: object
+      required:
+        - city_name
+        - latitude
+        - longitude
+      properties:
+        city_name:
+          type: string
+        latitude:
+          type: number
+          format: float
+          example: 37.7749
+        longitude:
+          type: number
+          format: float
+          example: -122.4194
+
+    CityResponse:
+      allOf:
+        - $ref: "#/components/schemas/City"
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int32
+
+    PaginatedCityResponse:
+      type: object
+      properties:
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CityResponse"
+
+    # [
+    #   {
+    #     "Region Code": ["city1 name", "city2 name", "city3 name"]
+    #   },
+    #   {
+    #     "Region Code": ["city1 name", "city2 name", "city3 name"]
+    #   }
+    # ]
+    CitiesByRegion:
+      type: array
+      items:
+        type: object
+        additionalProperties:
+          type: array
+          items:
+            type: string
+
+    PaginatedCitiesByRegionResponse:
+      type: object
+      properties:
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CitiesByRegion"
+
+    # ===============================================================================
+    # Withdrawal Fees Module
+    # ===============================================================================
+
+    PSP:
+      type: object
+      properties:
+        psp_country_code:
+          type: string
+          description: Country code ISO 3166-1 ALPHA-2
+        psp_code:
+          type: string
+          description: PSP code in a specific format (Country_code - PSP_shortcode)
+          example: CG-MTN-MTN
+        psp_short_name:
+          type: string
+          description: Short human friendly name of the PSPShort human friendly name of the PSP
+
+    PSPResponse:
+      allOf:
+        - $ref: "#/components/schemas/PSP"
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int32
+
+    PaginatedPSPResponse:
+      type: object
+      properties:
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PSPResponse"
+
+    FeeAmountListForPSP:
+      type: array
+      items:
+        type: object
+        additionalProperties:
+          type: array
+          items:
+            type: string
+            example: 3.99
+
+    PSPFeeSet:
+      type: object
+      properties:
+        psp:
+          $ref: "#/components/schemas/PSP"
+        auditlog:
+          $ref: "#/components/schemas/AuditLog"
+
+    PSPFeeSetResponse:
+      allOf:
+        - $ref: "#/components/schemas/PSPFeeSet"
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int32
+
+    PaginatedPSPFeeSetResponse:
+      type: object
+      properties:
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PSPFeeSetResponse"
+
+    PSPFeeRange:
+      type: object
+      properties:
+        set_id:
+          type: string
+          description: Link to fee set this range is part of
+        from:
+          type: integer
+          default: 0
+          description: lower bound this fee is configured to
+        to:
+          type: integer
+          default: 0
+          description: upper bound this fee is configured to
+        fee_fixed:
+          type: integer
+          default: 0
+          description: Fixed fee amount
+        fee_percentage:
+          type: integer
+          default: 0
+          description: Fixed fee amount
+        max_total_fee:
+          type: integer
+          default: 999999999000
+          description: set by system on record creation unless updated by user
+        auditlog:
+          $ref: "#/components/schemas/AuditLog"
+
+    PSPFeeRangeResponse:
+      allOf:
+        - $ref: "#/components/schemas/PSPFeeRange"
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int32
+
+    PaginatedPSPFeeRangeResponse:
+      type: object
+      properties:
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PSPFeeRangeResponse"
+
+  # ===============================================================================
+  # Security
+  # ===============================================================================
+
+  securitySchemes:
+    mus_auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: https://localhost
+          scopes:
+            write:region: update region in your account
+            read:region: read your regions
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header

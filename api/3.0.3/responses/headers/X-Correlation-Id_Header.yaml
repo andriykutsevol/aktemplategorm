@@ -1,0 +1,4 @@
+description: X-Correlation-Id header in response
+schema:
+  type: string
+example: 01JETYSDHJ012H49C5G7PGHKB0

@@ -1,0 +1,49 @@
+# Set the base image for the build stage
+FROM golang:1.23-bookworm AS build-stage
+
+# Add non-root user
+RUN useradd -u 1001 nonrootuser
+
+# Set the working directory for the buiuld stage
+WORKDIR /opt/mus
+
+# Copying only files required to install dependencies
+# Potentially provides better layer caching, and improving image's efficiency
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    go mod download
+
+# Copy the entire project
+COPY ../../. /opt/mus
+
+# Build the binary
+RUN go build \
+    -ldflags="-linkmode external -extldflags -static" \
+    -tags netgo \
+    ./cmd/mus
+
+# Set the base image for the main stage
+FROM scratch
+
+# Set the working directory of the main stage
+WORKDIR /
+
+# Copy the passwd file for non-root user and the compiled binary
+COPY --from=build-stage /etc/passwd /etc/passwd
+COPY --from=build-stage /opt/mus/mus /usr/bin/mus
+COPY migrations /app/migrations
+
+# Use non-root user
+USER nonrootuser
+
+# Set exposed ports
+EXPOSE ${APP_PORT}
+
+# Healthcheck
+HEALTHCHECK --timeout=3s --start-period=3s --retries=1 CMD curl --fail http://localhost:${APP_PORT}/ping || exit 1
+
+# Define the entrypoint
+ENTRYPOINT ["/usr/bin/mus"]

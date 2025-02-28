@@ -1,0 +1,5 @@
+description: Date header in response
+schema:
+  type: string
+  format: date-time
+example: 2024-10-27T12:34:56.123456Z # oas3 date-time example; Z - indicates UTC time. T - instead of space.

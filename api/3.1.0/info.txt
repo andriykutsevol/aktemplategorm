@@ -1,0 +1,9 @@
+docker run --rm -v $(pwd):/spec redocly/cli bundle /spec/openapi.yaml --output /spec/bundled.yaml
+
+docker run --rm -v $PWD:/spec redocly/cli lint bundled.yaml
+
+
+
+Convert openapi 3.1 to 3.0 (the Postman still does not want to save it)
+npm i -g @apiture/openapi-down-convert
+openapi-down-convert --input bundled.yaml --output bundled-3.0.yaml

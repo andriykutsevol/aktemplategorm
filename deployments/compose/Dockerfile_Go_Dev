@@ -1,0 +1,55 @@
+# Set the base image for the build stage
+FROM golang:1.23-bookworm AS build-stage
+
+# Add non-root user
+RUN useradd -u 1001 nonrootuser
+
+# Set the working directory for the buiuld stage
+WORKDIR /opt/app
+
+# Copying only files required to install dependencies
+# Potentially provides better layer caching, and improving image's efficiency
+COPY go.mod go.sum ./
+
+# Это пока не понятно, влияет или нет.
+# Download dependencies
+# RUN --mount=type=cache,target=/go/pkg/mod \
+#     --mount=type=cache,target=/root/.cache/go-build \
+#     go mod tidy
+RUN go mod download
+
+# We have to copy it to make canes.
+# Copy the entire project
+COPY . /opt/app
+
+# Instead we require a volume
+# VOLUME 
+
+# Build the binary
+# In this case the mount=type=cache is required to not redownload
+# all dependencies. It is because docker caches all outout of layer by default
+# And If layer changes, it rebuilds it. In this case, if we modified some .go file
+# the layer is invalidated and will be rebuilt (and redownload all deps)
+# in this particular case the mount=type=cache is really helpfull.
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    go build \
+    -ldflags="-linkmode external -extldflags -static" \
+    -tags netgo \
+    ./cmd/mus
+
+# Set exposed ports
+EXPOSE ${APP_PORT}
+
+# Healthcheck
+# HEALTHCHECK --timeout=3s --start-period=3s --retries=1 CMD curl --fail http://localhost:${APP_PORT}/ping || exit 1
+
+# This will work only with the docker-compose --progress=plain and docker-compose build --progress=plain --no-cache
+# RUN echo "Listing files in /opt/app:" && ls -la /opt/app
+RUN echo "Listing files in /opt/app:" && ls -la /opt/app && echo "Done listing files."
+
+# It will be ignored if you'll specify parameters for docker run, or the "or command: []" from .yml
+# So, this CMD allows us run /bin/bash instead of /opt/app/mus conditionally, based on artuments.
+CMD ["/opt/app/mus"]
+# If you set the "or command: []" from .yml it will be added to the end of ENTRYPOINT
+#ENTRYPOINT []

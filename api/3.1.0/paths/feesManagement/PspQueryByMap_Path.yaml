@@ -1,0 +1,56 @@
+security: [] # Overrides global security, making this endpoint public
+tags:
+  - FeeManagement
+summary: QueryPspMap
+operationId: QueryPspMap
+parameters:
+  - $ref: "../../parameters/inHeader/Bearer-Api-Key_Parameter.yaml"
+  - $ref: "../../parameters/inHeader/Content-Type_Parameter.yaml"
+  - $ref: "../../parameters/inHeader/X-Correlation-Id_Parameter.yaml"
+
+  - name: IDs
+    in: query
+    required: false
+    schema:
+      type: array
+      description: Array of db primary keys for query filter
+      items:
+        type: number
+      example: []
+  - name: PspCode
+    in: query
+    required: false
+    schema:
+      type: string
+      description: Psp code in a specific format (Country_code - Psp_shortcode)
+      example: CG-MTN-MTN_1
+  - name: PspCountryCode
+    in: query
+    required: false
+    schema:
+      type: string
+      description: Country code ISO 3166-1 ALPHA-2
+      example: CM
+  - name: Sort
+    in: query
+    required: false
+    schema:
+      type: array
+      description: Array fields to soft response (ID - ascending, -ID - descending)
+      items:
+        type: string
+        enum: [ID, PspCode, -ID, -PspCode]
+      example: [ID, -PspCode]
+
+  - $ref: "../../parameters/inQuery/pagination/CurrentPage_Parameter.yaml"
+  - $ref: "../../parameters/inQuery/pagination/PageSize_Parameter.yaml"
+  - $ref: "../../parameters/inQuery/pagination/OnlyCount_Parameter.yaml"
+responses:
+  "200":
+    $ref: "../../responses/QueryPsp_Response.yaml"
+  "400":
+    $ref: "../../responses/error_Response.yaml#/BadRequest"
+  "401":
+    $ref: "../../responses/error_Response.yaml#/Unauthorized"
+  "500":
+    $ref: "../../responses/error_Response.yaml#/InternalServerError"

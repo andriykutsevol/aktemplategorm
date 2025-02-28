@@ -1,0 +1,6 @@
+name: PageSize
+in: query
+schema:
+  type: integer
+  default: 10
+  minimum: 3

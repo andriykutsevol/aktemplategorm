@@ -1,0 +1,17 @@
+post:
+  security: [] # Overrides global security, making this endpoint public
+  tags:
+    - Auth
+  summary: Generate jwt
+  operationId: Login
+  requestBody:
+    $ref: "../../requestBodies/Login_RequestBody.yaml"
+  responses:
+    "200":
+      $ref: "../../responses/Login_Response.yaml"
+    "400":
+      $ref: "../../responses/error_Response.yaml#/BadRequest"
+    "401":
+      $ref: "../../responses/error_Response.yaml#/Unauthorized"
+    "500":
+      $ref: "../../responses/error_Response.yaml#/InternalServerError"
