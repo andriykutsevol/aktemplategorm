@@ -1,1 +1,1 @@
-# go_backend
+# GO Domain-Driven and Hexagonal Architecture.
