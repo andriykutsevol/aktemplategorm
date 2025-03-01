@@ -339,4 +339,15 @@ generate_mocks_pkg:
 		echo "MOCKPKG is not set. Please set MOCKPKG to the directory containing the package to generate mocks for."; \
 		exit 1; \
 	fi
-	mockery --all --keeptree --output $(MOCKS) --dir $(MOCKPKG)	
+	mockery --all --keeptree --output $(MOCKS) --dir $(MOCKPKG)
+
+
+
+# In Makefile, a single $ is used for variable substitution.
+# In a Makefile, $(...) is interpreted as a Make variable substitution, not a shell command.
+# As a result, $(go list ./... | grep -v ./integration) is not executed as expected.
+# To pass a literal $ to the shell (so it executes $(...) properly), you must escape it with another $, making it $$().
+
+.PHONY: run_unit-tests
+run_unit-tests:
+	go test $$(go list ./... | grep -v ./integration)
