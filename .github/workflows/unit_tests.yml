@@ -35,7 +35,7 @@ jobs:
 
       - name: Run unit tests
         #run: go test -v ./...
-        run: go test $$(go list ./... | grep -v ./integration)      # run: executes directly in a shell (like Bash), where $() works normally without escaping.
+        run: go test $(go list ./... | grep -v ./integration)      # run: executes directly in a shell (like Bash), where $() works normally without escaping.
         working-directory: .
 
       - name: Run coverage (optional)
