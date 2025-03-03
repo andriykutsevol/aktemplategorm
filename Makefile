@@ -19,11 +19,15 @@ BUILDKIT_PROGRESS=plain
 #BUILDKIT_PROGRESS=auto	# (default): Allows BuildKit to choose the most suitable output format.
 #BUILDKIT_PROGRESS=tty	# Uses a fancy progress display that groups and summarizes each stage of the build. 
 #						This is the default when BuildKit is enabled and the terminal supports TTY.
-
 export BUILDKIT_PROGRESS
 #	or use --progress=plain with the "docker build" or "docker-compose ... build ..."
 
-ENV ?= dev
+
+
+# If you simply run make, the ENV variable will default to "dev", and the .env_dev file will be included.
+# To use a different environment, you can set the ENV variable when running make. 
+#		For example: make ENV=test. This will include the .env_test file.
+ENV ?= dev					# The ?= operator is a conditional assignment operator. It means: "If ENV is not already defined, set it to dev."
 ifeq ($(ENV), dev)
 ENVFILE = .env_dev
 endif
@@ -31,6 +35,8 @@ ifeq ($(ENV), test)
 ENVFILE = .env_test
 endif
 include $(ENVFILE)
+
+
 
 .DEFAULT: help
 .PHONY: help
@@ -43,6 +49,7 @@ help:
 	echo "make migrate-onnetwork"
 	echo "=============="
 
+# $(info $(BUILDKIT_PROGRESS))
 
 #============================================================================
 # DB related.
@@ -59,6 +66,8 @@ help:
 
 .PHONY: run_db-onnetwork
 run_db-onnetwork:
+	echo "DEPLOYMENTS is: $(DEPLOYMENTS)"
+	echo "MYSQL_HOST_ONNETWORK is: $(MYSQL_HOST_ONNETWORK)"
 	/bin/bash $(DEPLOYMENTS)/create_network.sh
 #	This command creates simple volume because we define it on our .yml
 #	And when we delete a container, the volume remains, and when we create and launch a container, 
@@ -300,8 +309,7 @@ redocly:
 
 #============================================================================
 #============================================================================
-
-
+# Unit tests
 
 # make generate_mocks_pkg
 MOCKS		   := $(ROOT_DIR)/mocks
@@ -351,3 +359,29 @@ generate_mocks_pkg:
 .PHONY: run_unit-tests
 run_unit-tests:
 	go test $$(go list ./... | grep -v ./integration)
+
+
+
+#============================================================================
+#============================================================================
+# Integration tests
+
+
+.PHONE: run_integration-tests
+run_integration-tests:
+	echo $(NETWORK_NAME)
+# run_integration-tests: run_db-onnetwork migrate_baseline-onnetwork migrate-onnetwork		# the order of dependent targets in your Makefile rule is crucial, and they will be executed sequentially.
+# 		echo "All targets for run_integration-tests!"
+
+
+
+
+
+
+
+
+
+
+
+
+
