@@ -3,7 +3,7 @@
 # Check if the network already exists
 if ! docker network ls --format '{{.Name}}' | grep -q "^${NETWORK_NAME}\$"; then
   echo "Network ${NETWORK_NAME} does not exist. Creating it..."
-  docker network create --subnet=172.18.1.0/24 --gateway=172.18.1.1 "${NETWORK_NAME}"
+  docker network create --subnet="${SUBNET}" --gateway="${GATEWAY}" "${NETWORK_NAME}"
 else
   echo "Network ${NETWORK_NAME} already exists."
 fi

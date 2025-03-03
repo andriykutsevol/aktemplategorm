@@ -3,7 +3,7 @@ services:
     image: mysql:8
     restart: unless-stopped
     ports:
-      - ${MYSQL_PORT_ONHOST}:3306
+      - ${MYSQL_PORT_ONNETWORK}:3306
     env_file:
       - ${ROOT_DIR}/${ENVFILE}
     healthcheck:
@@ -108,10 +108,14 @@ volumes:
 
 networks:
   mus:
-    name: mus_network
+    name: ${NETWORK_NAME}
     external: true
-    driver: bridge      # Default. Does not change the default behavior but explicitly declares that this network is of the bridge type.                  
-    # ipam:                           # But we create network manually instead. 
-    #   config:                       # Because it have to be created already if we use "external"
-    #     - subnet: 172.18.1.0/24     # And we required the "external" because we want to connect to it with "docker run" also,
-                                      # Not only docker composer.
+    #driver: bridge      # Default. Does not change the default behavior but explicitly declares that this network is of the bridge type.                  
+    ipam:                           # But we create network manually instead. 
+      config:                       # Because it have to be created already if we use "external"
+        - subnet: ${SUBNET}     # And we required the "external" because we want to connect to it with "docker run" also,
+                                    #  Not only docker composer.
+
+
+
+

@@ -6,7 +6,6 @@
 SHELL          := $(shell which bash)
 ROOT_DIR       := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 BACKEND_DIR	   := ${ROOT_DIR}/cmd/mus
-PROJECT_NAME   := mus
 VERSION        := 1.0.0
 MIGRATIONS	   := $(ROOT_DIR)/deployments/migrations
 DEPLOYMENTS    := $(ROOT_DIR)/deployments/compose
@@ -19,6 +18,7 @@ BUILDKIT_PROGRESS=plain
 #BUILDKIT_PROGRESS=auto	# (default): Allows BuildKit to choose the most suitable output format.
 #BUILDKIT_PROGRESS=tty	# Uses a fancy progress display that groups and summarizes each stage of the build. 
 #						This is the default when BuildKit is enabled and the terminal supports TTY.
+
 export BUILDKIT_PROGRESS
 #	or use --progress=plain with the "docker build" or "docker-compose ... build ..."
 
@@ -27,7 +27,9 @@ export BUILDKIT_PROGRESS
 # If you simply run make, the ENV variable will default to "dev", and the .env_dev file will be included.
 # To use a different environment, you can set the ENV variable when running make. 
 #		For example: make ENV=test. This will include the .env_test file.
-ENV ?= dev					# The ?= operator is a conditional assignment operator. It means: "If ENV is not already defined, set it to dev."
+# The ?= operator is a conditional assignment operator. It means: "If ENV is not already defined, set it to dev."
+
+ENV ?= dev
 ifeq ($(ENV), dev)
 ENVFILE = .env_dev
 endif
@@ -35,8 +37,6 @@ ifeq ($(ENV), test)
 ENVFILE = .env_test
 endif
 include $(ENVFILE)
-
-
 
 .DEFAULT: help
 .PHONY: help
@@ -49,7 +49,6 @@ help:
 	echo "make migrate-onnetwork"
 	echo "=============="
 
-# $(info $(BUILDKIT_PROGRESS))
 
 #============================================================================
 # DB related.
@@ -67,17 +66,17 @@ help:
 .PHONY: run_db-onnetwork
 run_db-onnetwork:
 	echo "DEPLOYMENTS is: $(DEPLOYMENTS)"
-	echo "MYSQL_HOST_ONNETWORK is: $(MYSQL_HOST_ONNETWORK)"
+	echo "NETWORK_NAME: $(NETWORK_NAME)"
 	/bin/bash $(DEPLOYMENTS)/create_network.sh
 #	This command creates simple volume because we define it on our .yml
 #	And when we delete a container, the volume remains, and when we create and launch a container, 
 #	this volume is mounted (because it is specified in .yml) and if there is already data there, it is saved.
 	docker-compose --project-name $(PROJECT_NAME) -f $(DEPLOYMENTS)/docker-compose.yml --profile db up -d
 
-.PHONY: clear_db
+.PHONY: clear_db-onnetwork
 clear_db-onnetwork:
 	docker-compose --project-name $(PROJECT_NAME) -f $(DEPLOYMENTS)/docker-compose.yml --profile db down
-	docker volume rm $(PROJECT_NAME)_db
+	docker volume inspect $(PROJECT_NAME)_db >/dev/null 2>&1 && docker volume rm $(PROJECT_NAME)_db
 	/bin/bash $(DEPLOYMENTS)/remove_network.sh
 
 # You need to wait like 10 seconds after run_db before this.
@@ -311,6 +310,7 @@ redocly:
 #============================================================================
 # Unit tests
 
+
 # make generate_mocks_pkg
 MOCKS		   := $(ROOT_DIR)/mocks
 MOCKPKG ?= './'
@@ -347,8 +347,7 @@ generate_mocks_pkg:
 		echo "MOCKPKG is not set. Please set MOCKPKG to the directory containing the package to generate mocks for."; \
 		exit 1; \
 	fi
-	mockery --all --keeptree --output $(MOCKS) --dir $(MOCKPKG)
-
+	mockery --all --keeptree --output $(MOCKS) --dir $(MOCKPKG)	
 
 
 # In Makefile, a single $ is used for variable substitution.
@@ -367,21 +366,8 @@ run_unit-tests:
 # Integration tests
 
 
+# make ENV=test run_integration-tests
+
 .PHONE: run_integration-tests
-run_integration-tests:
-	echo $(NETWORK_NAME)
-# run_integration-tests: run_db-onnetwork migrate_baseline-onnetwork migrate-onnetwork		# the order of dependent targets in your Makefile rule is crucial, and they will be executed sequentially.
-# 		echo "All targets for run_integration-tests!"
-
-
-
-
-
-
-
-
-
-
-
-
-
+run_integration-tests: clear_db-onnetwork run_db-onnetwork	# the order of dependent targets in your Makefile rule is crucial, and they will be executed sequentially.
+		echo $(NETWORK_NAME)
