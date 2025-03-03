@@ -6,7 +6,6 @@
 SHELL          := $(shell which bash)
 ROOT_DIR       := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 BACKEND_DIR	   := ${ROOT_DIR}/cmd/mus
-PROJECT_NAME   := mus
 VERSION        := 1.0.0
 MIGRATIONS	   := $(ROOT_DIR)/deployments/migrations
 DEPLOYMENTS    := $(ROOT_DIR)/deployments/compose
@@ -22,6 +21,13 @@ BUILDKIT_PROGRESS=plain
 
 export BUILDKIT_PROGRESS
 #	or use --progress=plain with the "docker build" or "docker-compose ... build ..."
+
+
+
+# If you simply run make, the ENV variable will default to "dev", and the .env_dev file will be included.
+# To use a different environment, you can set the ENV variable when running make. 
+#		For example: make ENV=test. This will include the .env_test file.
+# The ?= operator is a conditional assignment operator. It means: "If ENV is not already defined, set it to dev."
 
 ENV ?= dev
 ifeq ($(ENV), dev)
@@ -59,16 +65,18 @@ help:
 
 .PHONY: run_db-onnetwork
 run_db-onnetwork:
+	echo "DEPLOYMENTS is: $(DEPLOYMENTS)"
+	echo "NETWORK_NAME: $(NETWORK_NAME)"
 	/bin/bash $(DEPLOYMENTS)/create_network.sh
 #	This command creates simple volume because we define it on our .yml
 #	And when we delete a container, the volume remains, and when we create and launch a container, 
 #	this volume is mounted (because it is specified in .yml) and if there is already data there, it is saved.
 	docker-compose --project-name $(PROJECT_NAME) -f $(DEPLOYMENTS)/docker-compose.yml --profile db up -d
 
-.PHONY: clear_db
+.PHONY: clear_db-onnetwork
 clear_db-onnetwork:
 	docker-compose --project-name $(PROJECT_NAME) -f $(DEPLOYMENTS)/docker-compose.yml --profile db down
-	docker volume rm $(PROJECT_NAME)_db
+	docker volume inspect $(PROJECT_NAME)_db >/dev/null 2>&1 && docker volume rm $(PROJECT_NAME)_db
 	/bin/bash $(DEPLOYMENTS)/remove_network.sh
 
 # You need to wait like 10 seconds after run_db before this.
@@ -300,7 +308,7 @@ redocly:
 
 #============================================================================
 #============================================================================
-
+# Unit tests
 
 
 # make generate_mocks_pkg
@@ -340,3 +348,26 @@ generate_mocks_pkg:
 		exit 1; \
 	fi
 	mockery --all --keeptree --output $(MOCKS) --dir $(MOCKPKG)	
+
+
+# In Makefile, a single $ is used for variable substitution.
+# In a Makefile, $(...) is interpreted as a Make variable substitution, not a shell command.
+# As a result, $(go list ./... | grep -v ./integration) is not executed as expected.
+# To pass a literal $ to the shell (so it executes $(...) properly), you must escape it with another $, making it $$().
+
+.PHONY: run_unit-tests
+run_unit-tests:
+	go test $$(go list ./... | grep -v ./integration)
+
+
+
+#============================================================================
+#============================================================================
+# Integration tests
+
+
+# make ENV=test run_integration-tests
+
+.PHONE: run_integration-tests
+run_integration-tests: clear_db-onnetwork run_db-onnetwork	# the order of dependent targets in your Makefile rule is crucial, and they will be executed sequentially.
+		echo $(NETWORK_NAME)

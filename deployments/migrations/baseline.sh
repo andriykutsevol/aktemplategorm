@@ -3,6 +3,7 @@ source ${1}
 
 
 echo "[ ! ] Migrating database baseline"
+echo "NETWORK_NAME: ${NETWORK_NAME}"
 docker run \
     --network ${2} \
     -v ${MIGRATIONS}:/flyway/sql \
