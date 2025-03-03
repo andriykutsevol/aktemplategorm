@@ -1,7 +1,6 @@
-# GO Domain-Driven and Hexagonal Architecture.
-
-
-- Multi-files swagger 3.0, 3.1
+# Domain-Driven Design, Hexagonal Architecture.
+- multi-files OpenAPI 3.0, 3.1
 - gorm
-- gin
-- Mockery
+- mockery for unit testing
+- github actions for unit testing
+- integration testing work in process
