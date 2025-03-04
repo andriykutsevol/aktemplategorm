@@ -3,7 +3,7 @@ services:
     image: mysql:8
     restart: unless-stopped
     ports:
-      - ${MYSQL_PORT_ONNETWORK}:3306
+      - ${MYSQL_PORT_EXPOSED}:${MYSQL_PORT_INTERNAL}
     env_file:
       - ${ROOT_DIR}/${ENVFILE}
     healthcheck:
@@ -23,8 +23,8 @@ services:
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     environment:
-      PMA_HOST: db_service
-      PMA_PORT: ${MYSQL_PORT_ONNETWORK}
+      PMA_HOST: db_service                # Containers can reach each other directly using their service names
+      PMA_PORT: ${MYSQL_PORT_INTERNAL}    # and internal ports.
       PMA_USER: ${MYSQL_USER}
       PMA_PASSWORD: ${MYSQL_PASSWORD}
       PMA_ARBITRARY: 1

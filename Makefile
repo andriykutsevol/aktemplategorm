@@ -82,7 +82,7 @@ clear_db-onnetwork:
 # You need to wait like 10 seconds after run_db before this.
 .PHONY: migrate_baseline-onnetwork
 migrate_baseline-onnetwork:
-	/bin/bash $(MIGRATIONS)/baseline.sh $(ROOT_DIR)/$(ENVFILE) $(NETWORK_NAME) $(MYSQL_HOST_ONNETWORK) $(MYSQL_PORT_ONNETWORK) $(FLYWAY_BASELINE)
+	/bin/bash $(MIGRATIONS)/baseline.sh $(ROOT_DIR)/$(ENVFILE) $(NETWORK_NAME) $(MYSQL_HOST_ONNETWORK) $(MYSQL_PORT_INTERNAL) $(FLYWAY_BASELINE)
 
 .PHONY: migrate_baseline-onlocalhost
 migrate_baseline-onlocalhost:
@@ -91,7 +91,7 @@ migrate_baseline-onlocalhost:
 
 .PHONY: migrate-onnetwork
 migrate-onnetwork:
-	/bin/bash $(MIGRATIONS)/migrate.sh $(ROOT_DIR)/$(ENVFILE) $(NETWORK_NAME) $(MYSQL_HOST_ONNETWORK) $(MYSQL_PORT_ONNETWORK)
+	/bin/bash $(MIGRATIONS)/migrate.sh $(ROOT_DIR)/$(ENVFILE) $(NETWORK_NAME) $(MYSQL_HOST_ONNETWORK) $(MYSQL_PORT_INTERNAL)
 
 
 .PHONY: migrate-onlocalhost
@@ -366,8 +366,14 @@ run_unit-tests:
 # Integration tests
 
 
-# make ENV=test run_integration-tests
+# --volumes: Removes named and anonymous volumes created by Compose.
+# docker compose -f docker-compose.yml down --volumes --rmi all
 
+# --rmi all: Deletes all images built by Compose (unless used by another container).
+# docker compose -f docker-compose.yml down --volumes
+
+# make ENV=test run_integration-tests
+# # the order of dependent targets in your Makefile rule is crucial, and they will be executed sequentially.
 .PHONE: run_integration-tests
-run_integration-tests: clear_db-onnetwork run_db-onnetwork	# the order of dependent targets in your Makefile rule is crucial, and they will be executed sequentially.
+run_integration-tests: clear_db-onnetwork run_db-onnetwork migrate_baseline-onnetwork migrate-onnetwork up_go_dev-onnetwork
 		echo $(NETWORK_NAME)
