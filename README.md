@@ -6,6 +6,6 @@
 - integration testing work in process
 
 
-# You can suuport me, or hire me on:
+# You can support me, or hire me on:
 - [LinkedIn](www.linkedin.com/in/andriy-kutsevol-5aa792139)
 - [Upwork](https://www.upwork.com/freelancers/andriykutsevol) 
