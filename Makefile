@@ -71,13 +71,31 @@ run_db-onnetwork:
 #	This command creates simple volume because we define it on our .yml
 #	And when we delete a container, the volume remains, and when we create and launch a container, 
 #	this volume is mounted (because it is specified in .yml) and if there is already data there, it is saved.
-	docker-compose --project-name $(PROJECT_NAME) -f $(DEPLOYMENTS)/docker-compose.yml --profile db up -d
+	docker-compose --project-name $(PROJECT_NAME) -f $(DEPLOYMENTS)/docker-compose.yml --profile db_all up -d
 
 .PHONY: clear_db-onnetwork
 clear_db-onnetwork:
+	docker-compose --project-name $(PROJECT_NAME) -f $(DEPLOYMENTS)/docker-compose.yml --profile db_all down
+	docker volume inspect $(PROJECT_NAME)_db >/dev/null 2>&1 && docker volume rm $(PROJECT_NAME)_db
+	/bin/bash $(DEPLOYMENTS)/remove_network.sh
+
+
+.PHONY: run_dbtest-onnetwork
+run_dbtest-onnetwork:
+	echo "DEPLOYMENTS is: $(DEPLOYMENTS)"
+	echo "NETWORK_NAME: $(NETWORK_NAME)"
+	/bin/bash $(DEPLOYMENTS)/create_network.sh
+#	This command creates simple volume because we define it on our .yml
+#	And when we delete a container, the volume remains, and when we create and launch a container, 
+#	this volume is mounted (because it is specified in .yml) and if there is already data there, it is saved.
+	docker-compose --project-name $(PROJECT_NAME) -f $(DEPLOYMENTS)/docker-compose.yml --profile db up -d
+
+.PHONY: clear_dbtest-onnetwork
+clear_dbtest-onnetwork:
 	docker-compose --project-name $(PROJECT_NAME) -f $(DEPLOYMENTS)/docker-compose.yml --profile db down
 	docker volume inspect $(PROJECT_NAME)_db >/dev/null 2>&1 && docker volume rm $(PROJECT_NAME)_db
 	/bin/bash $(DEPLOYMENTS)/remove_network.sh
+
 
 # You need to wait like 10 seconds after run_db before this.
 .PHONY: migrate_baseline-onnetwork
@@ -153,7 +171,7 @@ rebuid_go_dev-onnetwork: build_go_dev up_go_dev-onnetwork
 
 .PHONY: run_backend_tests
 run_backend_tests:
-	docker-compose --project-name $(PROJECT_NAME) -f $(DEPLOYMENTS)/docker-compose.yml exec backend_dev go test ./integration
+	docker-compose --project-name $(PROJECT_NAME) -f $(DEPLOYMENTS)/docker-compose.yml exec backend_dev go test -v ./integration
 
 
 
@@ -161,7 +179,7 @@ run_backend_tests:
 # It does NOT remove external networks (external: true in docker-compose.yml).
 .PHONY: cleanup_tests
 cleanup_tests:
-	docker compose -p $(PROJECT_NAME) down --volumes
+	docker compose -p $(PROJECT_NAME) down --volumes --rmi all
 	/bin/bash $(DEPLOYMENTS)/remove_network.sh
 
 #---------------------------------------------------------------------------
@@ -385,5 +403,5 @@ run_unit-tests:
 # make ENV=test run_integration-tests
 # # the order of dependent targets in your Makefile rule is crucial, and they will be executed sequentially.
 .PHONE: run_integration-tests
-run_integration-tests: run_db-onnetwork migrate_baseline-onnetwork migrate-onnetwork rebuid_go_dev-onnetwork run_backend_tests cleanup_tests
+run_integration-tests: run_dbtest-onnetwork migrate_baseline-onnetwork migrate-onnetwork rebuid_go_dev-onnetwork run_backend_tests cleanup_tests
 		echo $(NETWORK_NAME)
