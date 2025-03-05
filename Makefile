@@ -140,17 +140,29 @@ build_go_dev:
 up_go_dev-onnetwork:
 	export DATABASE_DSN=$(DATABASE_DSN_ONNETWORK)
 	export APP_PORT=$(APP_PORT_ONNETWORK)
-	docker-compose --project-name $(PROJECT_NAME) -f $(DEPLOYMENTS)/docker-compose.yml --profile backend_dev up
+	docker-compose --project-name $(PROJECT_NAME) -f $(DEPLOYMENTS)/docker-compose.yml --profile backend_dev up -d
 
 
 # You make changes in your code, then run this.
 # It is fast, it do not redownload required dependencies.
 # But it copy whole project to container every time.
-# To avoid this we need to implement bind mount (for development)
+# To avoid this we need to implement bind mount (for development, see "with volume")
 .PHONY: rebuid_go_dev-onnetwork
 rebuid_go_dev-onnetwork: build_go_dev up_go_dev-onnetwork
 	echo "All targets rebuid_go_dev-onnetwork executed!"
 
+.PHONY: run_backend_tests
+run_backend_tests:
+	docker-compose --project-name $(PROJECT_NAME) -f $(DEPLOYMENTS)/docker-compose.yml exec backend_dev go test ./integration
+
+
+
+# It does NOT remove images pulled from Docker Hub unless --rmi all is used.
+# It does NOT remove external networks (external: true in docker-compose.yml).
+.PHONY: cleanup_tests
+cleanup_tests:
+	docker compose -p $(PROJECT_NAME) down --volumes
+	/bin/bash $(DEPLOYMENTS)/remove_network.sh
 
 #---------------------------------------------------------------------------
 # Use case:
@@ -188,8 +200,6 @@ bash_backend_dev:
 	export DATABASE_DSN=$(DATABASE_DSN_ONNETWORK)
 	export APP_PORT=$(APP_PORT_ONNETWORK)
 	docker-compose --project-name $(PROJECT_NAME) -f $(DEPLOYMENTS)/docker-compose.yml exec -it backend_dev /bin/bash
-
-
 
 
 
@@ -358,8 +368,8 @@ generate_mocks_pkg:
 .PHONY: run_unit-tests
 run_unit-tests:
 	go test $$(go list ./... | grep -v ./integration)
-
-
+# grep -v inverts the match, meaning it excludes lines that contain ./integration.
+# This command lists all Go packages except those inside the ./integration directory.
 
 #============================================================================
 #============================================================================
@@ -375,5 +385,5 @@ run_unit-tests:
 # make ENV=test run_integration-tests
 # # the order of dependent targets in your Makefile rule is crucial, and they will be executed sequentially.
 .PHONE: run_integration-tests
-run_integration-tests: clear_db-onnetwork run_db-onnetwork migrate_baseline-onnetwork migrate-onnetwork up_go_dev-onnetwork
+run_integration-tests: run_db-onnetwork migrate_baseline-onnetwork migrate-onnetwork rebuid_go_dev-onnetwork run_backend_tests cleanup_tests
 		echo $(NETWORK_NAME)
