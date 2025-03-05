@@ -255,7 +255,8 @@ build_go_dev_vol:
 	docker-compose -f $(DEPLOYMENTS)/docker-compose.yml build --no-cache backend_dev_vol
 
 # Use case:
-# If run this when we have stopped container (created with build_go_dev_vol) it does not redownload dependencies.
+# If run this when we have stopped container (created with build_go_dev_vol) 
+# it does not redownload dependencies.
 .PHONY: up_go_dev_vol-onnetwork
 up_go_dev_vol-onnetwork:
 #	We do not need export all (except of DATABASE_DSN and APP_PORT, they're not in the .env_dev)
@@ -268,7 +269,7 @@ up_go_dev_vol-onnetwork:
 	export APP_PORT_ONNETWORK
 	export BACKEND_HOST_ONNETWORK
 	export ROOT_DIR
-	docker-compose --project-name $(PROJECT_NAME) -f $(DEPLOYMENTS)/docker-compose.yml --profile dev_vol up
+	docker-compose --project-name $(PROJECT_NAME) -f $(DEPLOYMENTS)/docker-compose.yml --profile dev_vol up -d
 
 
 .PHONY: create_go_dev_vol-onnetwork
@@ -287,7 +288,12 @@ create_go_dev_vol-onnetwork:
 
 
 # Use case:
-# 1) rebuid_go_dev_vol-onnetwork #  Just to combine the build_go_dev_vol and up_go_dev_vol-onnetwork
+# rebuid_go_dev_vol-onnetwork #  Just to combine the build_go_dev_vol and up_go_dev_vol-onnetwork
+
+# 1) rebuid_go_dev_vol-onnetwork
+# 2) bash_backend_dev_vol		# we need this step because the "docker-compose up" does not support -it
+
+
 
 .PHONY: rebuid_go_dev_vol-onnetwork
 rebuid_go_dev_vol-onnetwork: build_go_dev_vol up_go_dev_vol-onnetwork
