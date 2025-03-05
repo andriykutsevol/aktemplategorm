@@ -71,18 +71,36 @@ run_db-onnetwork:
 #	This command creates simple volume because we define it on our .yml
 #	And when we delete a container, the volume remains, and when we create and launch a container, 
 #	this volume is mounted (because it is specified in .yml) and if there is already data there, it is saved.
-	docker-compose --project-name $(PROJECT_NAME) -f $(DEPLOYMENTS)/docker-compose.yml --profile db up -d
+	docker-compose --project-name $(PROJECT_NAME) -f $(DEPLOYMENTS)/docker-compose.yml --profile db_all up -d
 
 .PHONY: clear_db-onnetwork
 clear_db-onnetwork:
+	docker-compose --project-name $(PROJECT_NAME) -f $(DEPLOYMENTS)/docker-compose.yml --profile db_all down
+	docker volume inspect $(PROJECT_NAME)_db >/dev/null 2>&1 && docker volume rm $(PROJECT_NAME)_db
+	/bin/bash $(DEPLOYMENTS)/remove_network.sh
+
+
+.PHONY: run_dbtest-onnetwork
+run_dbtest-onnetwork:
+	echo "DEPLOYMENTS is: $(DEPLOYMENTS)"
+	echo "NETWORK_NAME: $(NETWORK_NAME)"
+	/bin/bash $(DEPLOYMENTS)/create_network.sh
+#	This command creates simple volume because we define it on our .yml
+#	And when we delete a container, the volume remains, and when we create and launch a container, 
+#	this volume is mounted (because it is specified in .yml) and if there is already data there, it is saved.
+	docker-compose --project-name $(PROJECT_NAME) -f $(DEPLOYMENTS)/docker-compose.yml --profile db up -d
+
+.PHONY: clear_dbtest-onnetwork
+clear_dbtest-onnetwork:
 	docker-compose --project-name $(PROJECT_NAME) -f $(DEPLOYMENTS)/docker-compose.yml --profile db down
 	docker volume inspect $(PROJECT_NAME)_db >/dev/null 2>&1 && docker volume rm $(PROJECT_NAME)_db
 	/bin/bash $(DEPLOYMENTS)/remove_network.sh
 
+
 # You need to wait like 10 seconds after run_db before this.
 .PHONY: migrate_baseline-onnetwork
 migrate_baseline-onnetwork:
-	/bin/bash $(MIGRATIONS)/baseline.sh $(ROOT_DIR)/$(ENVFILE) $(NETWORK_NAME) $(MYSQL_HOST_ONNETWORK) $(MYSQL_PORT_ONNETWORK) $(FLYWAY_BASELINE)
+	/bin/bash $(MIGRATIONS)/baseline.sh $(ROOT_DIR)/$(ENVFILE) $(NETWORK_NAME) $(MYSQL_HOST_ONNETWORK) $(MYSQL_PORT_INTERNAL) $(FLYWAY_BASELINE)
 
 .PHONY: migrate_baseline-onlocalhost
 migrate_baseline-onlocalhost:
@@ -91,7 +109,7 @@ migrate_baseline-onlocalhost:
 
 .PHONY: migrate-onnetwork
 migrate-onnetwork:
-	/bin/bash $(MIGRATIONS)/migrate.sh $(ROOT_DIR)/$(ENVFILE) $(NETWORK_NAME) $(MYSQL_HOST_ONNETWORK) $(MYSQL_PORT_ONNETWORK)
+	/bin/bash $(MIGRATIONS)/migrate.sh $(ROOT_DIR)/$(ENVFILE) $(NETWORK_NAME) $(MYSQL_HOST_ONNETWORK) $(MYSQL_PORT_INTERNAL)
 
 
 .PHONY: migrate-onlocalhost
@@ -140,17 +158,29 @@ build_go_dev:
 up_go_dev-onnetwork:
 	export DATABASE_DSN=$(DATABASE_DSN_ONNETWORK)
 	export APP_PORT=$(APP_PORT_ONNETWORK)
-	docker-compose --project-name $(PROJECT_NAME) -f $(DEPLOYMENTS)/docker-compose.yml --profile backend_dev up
+	docker-compose --project-name $(PROJECT_NAME) -f $(DEPLOYMENTS)/docker-compose.yml --profile backend_dev up -d
 
 
 # You make changes in your code, then run this.
 # It is fast, it do not redownload required dependencies.
 # But it copy whole project to container every time.
-# To avoid this we need to implement bind mount (for development)
+# To avoid this we need to implement bind mount (for development, see "with volume")
 .PHONY: rebuid_go_dev-onnetwork
 rebuid_go_dev-onnetwork: build_go_dev up_go_dev-onnetwork
 	echo "All targets rebuid_go_dev-onnetwork executed!"
 
+.PHONY: run_backend_tests
+run_backend_tests:
+	docker-compose --project-name $(PROJECT_NAME) -f $(DEPLOYMENTS)/docker-compose.yml exec backend_dev go test -v ./integration
+
+
+
+# It does NOT remove images pulled from Docker Hub unless --rmi all is used.
+# It does NOT remove external networks (external: true in docker-compose.yml).
+.PHONY: cleanup_tests
+cleanup_tests:
+	docker compose -p $(PROJECT_NAME) down --volumes --rmi all
+	/bin/bash $(DEPLOYMENTS)/remove_network.sh
 
 #---------------------------------------------------------------------------
 # Use case:
@@ -191,8 +221,6 @@ bash_backend_dev:
 
 
 
-
-
 #============================================================================
 # Backend related with volume
 #============================================================================
@@ -227,7 +255,8 @@ build_go_dev_vol:
 	docker-compose -f $(DEPLOYMENTS)/docker-compose.yml build --no-cache backend_dev_vol
 
 # Use case:
-# If run this when we have stopped container (created with build_go_dev_vol) it does not redownload dependencies.
+# If run this when we have stopped container (created with build_go_dev_vol) 
+# it does not redownload dependencies.
 .PHONY: up_go_dev_vol-onnetwork
 up_go_dev_vol-onnetwork:
 #	We do not need export all (except of DATABASE_DSN and APP_PORT, they're not in the .env_dev)
@@ -240,7 +269,7 @@ up_go_dev_vol-onnetwork:
 	export APP_PORT_ONNETWORK
 	export BACKEND_HOST_ONNETWORK
 	export ROOT_DIR
-	docker-compose --project-name $(PROJECT_NAME) -f $(DEPLOYMENTS)/docker-compose.yml --profile dev_vol up
+	docker-compose --project-name $(PROJECT_NAME) -f $(DEPLOYMENTS)/docker-compose.yml --profile dev_vol up -d
 
 
 .PHONY: create_go_dev_vol-onnetwork
@@ -259,7 +288,12 @@ create_go_dev_vol-onnetwork:
 
 
 # Use case:
-# 1) rebuid_go_dev_vol-onnetwork #  Just to combine the build_go_dev_vol and up_go_dev_vol-onnetwork
+# rebuid_go_dev_vol-onnetwork #  Just to combine the build_go_dev_vol and up_go_dev_vol-onnetwork
+
+# 1) rebuid_go_dev_vol-onnetwork
+# 2) bash_backend_dev_vol		# we need this step because the "docker-compose up" does not support -it
+
+
 
 .PHONY: rebuid_go_dev_vol-onnetwork
 rebuid_go_dev_vol-onnetwork: build_go_dev_vol up_go_dev_vol-onnetwork
@@ -358,16 +392,22 @@ generate_mocks_pkg:
 .PHONY: run_unit-tests
 run_unit-tests:
 	go test $$(go list ./... | grep -v ./integration)
-
-
+# grep -v inverts the match, meaning it excludes lines that contain ./integration.
+# This command lists all Go packages except those inside the ./integration directory.
 
 #============================================================================
 #============================================================================
 # Integration tests
 
 
-# make ENV=test run_integration-tests
+# --volumes: Removes named and anonymous volumes created by Compose.
+# docker compose -f docker-compose.yml down --volumes --rmi all
 
+# --rmi all: Deletes all images built by Compose (unless used by another container).
+# docker compose -f docker-compose.yml down --volumes
+
+# make ENV=test run_integration-tests
+# # the order of dependent targets in your Makefile rule is crucial, and they will be executed sequentially.
 .PHONE: run_integration-tests
-run_integration-tests: clear_db-onnetwork run_db-onnetwork	# the order of dependent targets in your Makefile rule is crucial, and they will be executed sequentially.
+run_integration-tests: run_dbtest-onnetwork migrate_baseline-onnetwork migrate-onnetwork rebuid_go_dev-onnetwork run_backend_tests cleanup_tests
 		echo $(NETWORK_NAME)
