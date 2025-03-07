@@ -171,7 +171,7 @@ rebuid_go_dev-onnetwork: build_go_dev up_go_dev-onnetwork
 
 .PHONY: run_backend_tests
 run_backend_tests:
-	docker-compose --project-name $(PROJECT_NAME) -f $(DEPLOYMENTS)/docker-compose.yml exec backend_dev go test -v ./integration
+	docker-compose --project-name $(PROJECT_NAME) -f $(DEPLOYMENTS)/docker-compose.yml exec backend_dev go test -v ./integration/httphandlers
 
 
 

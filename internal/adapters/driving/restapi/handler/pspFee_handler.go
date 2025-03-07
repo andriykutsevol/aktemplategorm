@@ -216,13 +216,17 @@ func (apps *appsPSPFeeHandler) CreatePSP(c *gin.Context) {
 		Value: correlationID,
 	}
 
-	apiLogData := apps.apiLogGenerator.CreateApiLogData(timestamp, cid)
-	_ = apiLogData
-	// apiLogData[api_logger.API_VERSION]
-	// apiLogData[api_logger.COMPONENT]
-	// apiLogData[api_logger.ENVIRONMENT]
-	// apiLogData[api_logger.TIMESTAMP]
-	// apiLogData[api_logger.CORRELATION_ID]
+	// Actually we need a config to disable logs during integration testing and production modes.
+	if apps.apiLogGenerator != nil {
+		apiLogData := apps.apiLogGenerator.CreateApiLogData(timestamp, cid)
+		_ = apiLogData
+		// apiLogData[api_logger.API_VERSION]
+		// apiLogData[api_logger.COMPONENT]
+		// apiLogData[api_logger.ENVIRONMENT]
+		// apiLogData[api_logger.TIMESTAMP]
+		// apiLogData[api_logger.CORRELATION_ID]
+	}
+
 	//------------------------------------------------------
 
 	ctx := c.Request.Context()
@@ -278,9 +282,6 @@ func (apps *appsPSPFeeHandler) CreatePSP(c *gin.Context) {
 		return
 	}
 
-	fmt.Println("555")
-	fmt.Println("domainItem.PspCode: ", domainItem.PspCode)
-
 	//psp_response, err := response.FromDomain_Psp(*domainItem)
 	domainItemValue := *domainItem
 	psp_response, err := apps.converterFromDomain.FromDomain_Psp(domainItemValue)
@@ -294,8 +295,6 @@ func (apps *appsPSPFeeHandler) CreatePSP(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, errObj)
 		return
 	}
-
-	fmt.Println("666")
 
 	//	If you already have a JSON string and want to send it directly:
 	//	c.String(http.StatusOK, jsonString) // Respond with raw JSON string

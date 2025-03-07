@@ -30,8 +30,6 @@ func wrapUserAuthContext(c *gin.Context, userID string) {
 func AuthMiddleware(r sport.AuthRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		fmt.Println("AuthMiddleware!!!")
-
 		//--------------------------------------------------
 		// Parse User
 		var token string

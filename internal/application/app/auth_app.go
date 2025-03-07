@@ -3,6 +3,8 @@ package app
 import (
 	"context"
 	"errors"
+	"fmt"
+
 	"github.com/andriykusevol/aktemplategorm/internal/application/pport"
 	authEntity "github.com/andriykusevol/aktemplategorm/internal/domain/entity/auth"
 	"github.com/andriykusevol/aktemplategorm/internal/domain/sport"
@@ -38,6 +40,8 @@ func (app authApp) Verify(ctx context.Context, userName, password string) (*auth
 }
 
 func (app authApp) GenerateToken(ctx context.Context, userUUID string) (*authEntity.Auth, error) {
+
+	fmt.Println("!!! GenerateToken userUUID: ", userUUID)
 
 	auth, err := app.authRepo.GenerateToken(ctx, userUUID)
 	if err != nil {

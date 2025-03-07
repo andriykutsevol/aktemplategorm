@@ -2,12 +2,14 @@ package handler
 
 import (
 	"errors"
+	"fmt"
+	"net/http"
+
 	apierror "github.com/andriykusevol/aktemplategorm/internal/adapters/driving/errors"
 	"github.com/andriykusevol/aktemplategorm/internal/adapters/driving/restapi/internal"
 	"github.com/andriykusevol/aktemplategorm/internal/adapters/driving/restapi/request"
 	"github.com/andriykusevol/aktemplategorm/internal/adapters/driving/restapi/response"
 	"github.com/andriykusevol/aktemplategorm/internal/application/pport"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -69,6 +71,8 @@ func (apps *appsAuthHandler) Login(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, errObj)
 		return
 	}
+
+	fmt.Println("!!! Handler: user.UUID ", user.UUID)
 
 	c.Set("UserID", user.UUID)
 

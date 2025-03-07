@@ -1,6 +1,10 @@
 package logger
 
-import "go.uber.org/zap"
+import (
+	"fmt"
+
+	"go.uber.org/zap"
+)
 
 type ApiLogDataFieldName string
 
@@ -63,6 +67,11 @@ func (apiLogData *ApiLogGenerator) CreateApiLogData(fields ...ApiLogDataField) m
 
 	result := make(map[ApiLogDataFieldName]interface{})
 
+	if apiLogData == nil {
+		fmt.Println("!!! apiLogData == nil")
+		return result
+	}
+
 	//load default fields from .env
 	result[COMPONENT] = apiLogData.Component
 	result[ENVIRONMENT] = apiLogData.Environment
@@ -79,6 +88,12 @@ func (apiLogData *ApiLogGenerator) CreateApiLogData(fields ...ApiLogDataField) m
 func (apiLogData *ApiLogGenerator) CreateApiLogPayload(fields ...ApiLogDataPayloadField) map[string]interface{} {
 
 	result := make(map[string]interface{})
+
+	if apiLogData == nil {
+		fmt.Println("!!! apiLogData == nil")
+		return result
+	}
+
 	//add the provided fields in the log data
 	for _, field := range fields {
 		result[field.Key] = field.Value
