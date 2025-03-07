@@ -1,0 +1,37 @@
+%YAML 1.1
+---
+# mus.Psp
+-
+  ID: 1
+  PspCode: "CG-MTN-MTN"
+  PspShortName: "CG-MTN-MTN_1 Short name"
+  PspCountryCode: "CM"
+  CreatedAt: "2025-03-07 08:40:08"
+  UpdatedAt: "2025-03-07 08:40:08"
+  DeletedAt: null
+  CreatedBy: "ﬁï ùHòFÙØy±Á&¥¡"
+  UpdatedBy: "ﬁï ùHòFÙØy±Á&¥¡"
+  DeletedBy: null
+-
+  ID: 2
+  PspCode: "CG-MTN-MTN"
+  PspShortName: "CG-MTN-MTN_1 Short name"
+  PspCountryCode: "CM"
+  CreatedAt: "2025-03-07 08:40:19"
+  UpdatedAt: "2025-03-07 08:40:19"
+  DeletedAt: null
+  CreatedBy: "ﬁï ùHòFÙØy±Á&¥¡"
+  UpdatedBy: "ﬁï ùHòFÙØy±Á&¥¡"
+  DeletedBy: null
+-
+  ID: 3
+  PspCode: "CG-MTN-MTN"
+  PspShortName: "CG-MTN-MTN_1 Short name"
+  PspCountryCode: "CM"
+  CreatedAt: "2025-03-07 08:40:24"
+  UpdatedAt: "2025-03-07 08:40:24"
+  DeletedAt: null
+  CreatedBy: "ﬁï ùHòFÙØy±Á&¥¡"
+  UpdatedBy: "ﬁï ùHòFÙØy±Á&¥¡"
+  DeletedBy: null
+...

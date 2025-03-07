@@ -14,10 +14,16 @@ import (
 
 	//"github.com/andriykusevol/aktemplategorm/internal/adapters/driving/restapi/handler"
 	"context"
+	"database/sql"
+	_ "github.com/go-sql-driver/mysql"
+	//"github.com/go-testfixtures/testfixtures/v3"
 	"io"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -57,11 +63,67 @@ func makeRequest(method, url, apiKey string, payload io.Reader) (int, string, er
 	return res.StatusCode, string(body), nil
 }
 
+func Test_Fixtures(t *testing.T) {
+
+	// !!! Important: multiStatements=true
+	dtabaseDsn := "user:secret@tcp(172.18.2.2:3306)/mus?multiStatements=true&charset=utf8mb4&parseTime=True&loc=Local"
+
+	db, err := sql.Open("mysql", dtabaseDsn)
+	if err != nil {
+		log.Fatal("Error connecting to database:", err)
+	}
+	defer db.Close()
+
+	// Get the template parent directory
+	_, filename, _, _ := runtime.Caller(0)
+	dir := path.Join(path.Dir(filename), "..")
+	templateDir := fmt.Sprintf("%s/fixtures/testdata", dir)
+
+	// Read the SQL file
+	sqlFile := templateDir + "/Psp.sql" // Change this to your file path
+	sqlBytes, err := os.ReadFile(sqlFile)
+	if err != nil {
+		log.Fatal("Error reading SQL file:", err)
+	}
+
+	// Execute the SQL statements
+	sqlCommands := string(sqlBytes)
+	_, err = db.Exec(sqlCommands)
+	if err != nil {
+		log.Fatal("Error executing SQL file:", err)
+	}
+
+	fmt.Println("SQL file executed successfully!")
+
+	// // Get the template parent directory
+	// _, filename, _, _ := runtime.Caller(0)
+	// dir := path.Join(path.Dir(filename), "..")
+	// templateDir := fmt.Sprintf("%s/fixtures/testdata", dir)
+
+	// fmt.Println("!!! dir: ", dir)
+	// fmt.Println("!!! dir: ", templateDir)
+
+	// // Initialize fixtures
+	// fixtures, _ := testfixtures.New(
+	// 	testfixtures.Database(db),
+	// 	testfixtures.Dialect("mysql"),
+	// 	testfixtures.Directory(templateDir),
+	// )
+
+	// fmt.Println("11111")
+
+	// _ = fixtures.Load()
+
+	// fmt.Println("done")
+
+}
+
 func Test_AddPsp(t *testing.T) {
 
 	//appMode := os.Getenv("APP_MODE")
 	//appPort := os.Getenv("APP_PORT")
 	databaseDsn := os.Getenv("DATABASE_DSN")
+	fmt.Println("!!! databaseDsn: ", databaseDsn)
 	mysqlMaxOpenConns := os.Getenv("MYSQL_MAX_OPENCONNS")
 	mysqlMaxIDLEConns := os.Getenv("MYSQL_MAX_IDLECONS")
 	//appComponent := os.Getenv("COMPONENT")
@@ -123,7 +185,7 @@ func Test_AddPsp(t *testing.T) {
 			payload: strings.NewReader(`{
   				"PspCode": "CG-MTN-MTN",
   				"PspCountryCode": "CM",
-  				"PspShortName": "CG-MTN-MTN_1 Short name"			
+  				"PspShortName": "CG-MTN-MTN_1 Short name"
 			}`),
 			wantStatus: http.StatusCreated,
 		},
