@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"context"
-	"fmt"
 	apierror "github.com/andriykusevol/aktemplategorm/internal/adapters/driving/errors"
 	auth_domain "github.com/andriykusevol/aktemplategorm/internal/domain/entity/auth"
 	"github.com/andriykusevol/aktemplategorm/internal/domain/sport"
