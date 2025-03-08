@@ -4,20 +4,17 @@ on:
   workflow_dispatch:
 
 jobs:
-    integration-tests:
+  integration-tests:
     runs-on: ubuntu-latest
 
     steps:
-        - name: Checkout code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-        - name: Set up Docker
-        uses: docker/setup-docker@v3
+      - name: Set up Docker Compose
+        run: |
+          docker compose up -d
 
-        - name: Set up Docker Compose
-        uses: docker/setup-docker-compose@v3
-        with:
-            version: "latest"
+      - name: Run integration tests with Makefile
+        run: make run_integration-tests
 
-        - name: Run integration tests with Makefile
-        run: make run_integration-tests # Your Makefile target
