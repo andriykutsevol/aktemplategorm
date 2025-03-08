@@ -4,20 +4,22 @@ on:
   workflow_dispatch:
 
 jobs:
-integration-tests:
-  runs-on: ubuntu-latest
+  integration-tests:
+    name: Run Integration tests
+    runs-on: ubuntu-latest
 
-  steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+    steps:       
+        - name: Check Docker and Docker Compose
+          run: |
+            docker --version
+        - name: Install Legacy Docker Compose
+          run: |
+            sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+            docker-compose version            
 
-    - name: Set up Docker
-      uses: docker/setup-docker@v3
-
-    - name: Set up Docker Compose
-      uses: docker/setup-docker-compose@v3
-      with:
-        version: "latest"
-
-    - name: Run integration tests with Makefile
-      run: make run_integration-tests # Your Makefile target
+        - name: Checkout code
+          uses: actions/checkout@v4
+    
+        - name: Run integration tests with Makefile
+          run: make ENV=test run_integration-tests
