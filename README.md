@@ -3,7 +3,7 @@
 - gorm
 - mockery for unit testing
 - github actions for unit testing
-- integration testing work in process
+- integration testing. make. github actions.
 
 
 # You can support me, or hire me on:
