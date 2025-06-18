@@ -6,5 +6,5 @@
 
 
 # You can support me, or hire me on:
-- [LinkedIn](https://www.linkedin.com/in/andriy-kutsevol-5aa792139)
+- [LinkedIn](https://www.linkedin.com/in/andriy-kutsevol-b8a359370/)
 - [Upwork](https://www.upwork.com/freelancers/andriykutsevol) 
